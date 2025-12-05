@@ -1,6 +1,9 @@
 venv/
 .venv/
 __pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
 *.pyc
 *.pyo
 *.pyd
@@ -12,6 +15,7 @@ htmlcov/
 .env
 .env.local
 .env.*.local
+backend/.env
 node_modules/
 dist/
 build/
@@ -23,3 +27,5 @@ coverage/
 .env.production
 Dockerfile.backup
 NUL
+docs/
+notebook/
