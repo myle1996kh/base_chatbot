@@ -1,7 +1,12 @@
 venv/
 .venv/
 __pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
 *.pyc
+*/*.pyc
+*/*/*.pyc
 *.pyo
 *.pyd
 .Python
@@ -19,7 +24,10 @@ build/
 coverage/
 .nyc_output
 .DS_Store
+backend/.env
 .env.testing
 .env.production
 Dockerfile.backup
-NUL
+docs/
+notebook/
+frontend/package-lock.json
