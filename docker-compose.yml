@@ -7,9 +7,9 @@ services:
     container_name: itl-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: chatbot_itl
+      POSTGRES_DB: chatbot
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-this-password}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:}
     ports:
       - "5432:5432"
     volumes:
@@ -48,16 +48,14 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
-    # Load environment variables from backend/.env file
     env_file:
       - backend/.env
-    # Override specific variables for Docker environment
     environment:
-      # Database connection (override .env for Docker network)
-      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-change-this-password}@postgres:5432/chatbot_itl
-      # Redis connection (override .env for Docker network)
-      REDIS_URL: redis://redis:6379
-      # Application settings
+      DATABASE_URL: postgresql://postgres:Postgres123!@172.23.178.103:32001/chatbot
+
+      # Redis connection (nếu Redis cũng external thì sửa tương tự; nếu dùng redis service bên trên thì giữ redis://redis:6379)
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+
       ENVIRONMENT: ${ENVIRONMENT:-production}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
@@ -68,7 +66,6 @@ services:
     networks:
       - itl-network
     volumes:
-      # Persist uploaded files
       - uploads_data:/app/uploads
 
 networks:
