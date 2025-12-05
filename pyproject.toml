@@ -1,0 +1,38 @@
+[project]
+name = "itl-chatbot-works"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "alembic>=1.12.0",
+    "bcrypt>=4.0.0",
+    "cryptography>=41.0.0",
+    "fastapi>=0.100.0",
+    "gunicorn>=21.2.0",
+    "langchain>=0.3.0",
+    "langchain-anthropic>=0.2.0",
+    "langchain-community>=0.3.0",
+    "langchain-google-genai>=2.0.0",
+    "langchain-openai>=0.2.0",
+    "langchain-postgres>=0.0.12",
+    "langchain-text-splitters>=0.3.0",
+    "langgraph>=0.2.0",
+    "pgvector>=0.3.5",
+    "psycopg2-binary>=2.9.0",
+    "pydantic[email]>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pyjwt>=2.8.0",
+    "pypdf>=5.1.0",
+    "python-docx>=1.1.0",
+    "python-multipart>=0.0.6",
+    "redis>=5.0.0",
+    "sentence-transformers>=3.3.0",
+    "sqlalchemy>=2.0.0",
+    "uvicorn[standard]>=0.22.0",
+    "structlog>=23.1.0",
+    "prometheus-client>=0.19.0",
+    "httpx>=0.24.0",
+    "python-dotenv>=1.0.0",
+    "tiktoken>=0.5.0",
+]
