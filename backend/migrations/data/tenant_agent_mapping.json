@@ -1,0 +1,4 @@
+[
+  {"tenant_name": "Test_eTMS", "agent_name": "GuidelineAgent", "enabled": true},
+  {"tenant_name": "Test_eTMS", "agent_name": "SupervisorAgent", "enabled": true}
+]

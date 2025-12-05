@@ -1,0 +1,4 @@
+[
+  {"email": "admin@TesteTMS.local", "username": "admin_etms_test", "role": "admin", "tenant_name": "Test_eTMS"},
+  {"email": "support_supervisor@TesteTMS.local", "username": "Nguyễn Văn A", "role": "supporter", "tenant_name": "Test_eTMS"}
+]
