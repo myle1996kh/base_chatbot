@@ -188,6 +188,46 @@ export async function createSession(
 }
 
 /**
+ * Refresh chat user token (re-issue JWT) by email or user_id.
+ */
+export async function refreshChatUserToken(
+  tenantId: string,
+  params: { email?: string; userId?: string }
+): Promise<ServiceResponse<ChatUser>> {
+  try {
+    const url = `${API_CONFIG.BASE_URL}/api/${tenantId}/chat_users/refresh`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: params.email,
+        user_id: params.userId,
+      }),
+      timeout: API_CONFIG.TIMEOUT_MS,
+    } as RequestInit);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        success: false,
+        error: errorData.detail || `Failed to refresh token`,
+        code: `HTTP_${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error('Refresh chat user token error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
  * End a chat session (mark as resolved)
  */
 export async function endSession(

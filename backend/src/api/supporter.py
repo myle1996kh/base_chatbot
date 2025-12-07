@@ -22,6 +22,7 @@ from src.schemas.supporter_chat import (
     SupporterSessionsResponse,
 )
 from src.utils.logging import get_logger
+from src.services.websocket import websocket_bus, MessageCreatedEvent
 
 logger = get_logger(__name__)
 
@@ -425,30 +426,22 @@ async def supporter_send_message(
         db.commit()
         db.refresh(message)
 
-        # NEW: Broadcast message via SSE for real-time delivery
-        from src.services.sse_manager import sse_manager
-        import asyncio
-        
+        # Broadcast message via WebSocket (best effort)
         try:
-            await sse_manager.broadcast_message(
-                str(request.session_id),
-                {
-                    "type": "new_message",
-                    "message": {
-                        "message_id": str(message.message_id),
-                        "session_id": str(message.session_id),
-                        "role": message.role,
-                        "content": message.content,
-                        "sender_user_id": str(message.sender_user_id),
-                        "supporter_name": supporter.display_name or supporter.username,
-                        "created_at": message.created_at.isoformat(),
-                    }
-                }
+            await websocket_bus.publish_message_created(
+                MessageCreatedEvent(
+                    tenant_id=str(tenant_id),
+                    session_id=str(message.session_id),
+                    message_id=str(message.message_id),
+                    role=message.role,
+                    content=message.content,
+                    sender_user_id=str(message.sender_user_id),
+                    created_at=message.created_at.isoformat(),
+                    metadata=getattr(message, "message_metadata", None),
+                )
             )
-            logger.debug(f"SSE broadcast sent for message {message.message_id}")
         except Exception as e:
-            # Don't fail the request if SSE broadcast fails
-            logger.warning(f"SSE broadcast failed: {e}")
+            logger.warning("ws_broadcast_supporter_message_failed", error=str(e))
 
         logger.info(
             "supporter_message_sent",
@@ -569,6 +562,23 @@ async def admin_send_message(
         session.last_message_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(message)
+
+        # Broadcast message via WebSocket (best effort)
+        try:
+            await websocket_bus.publish_message_created(
+                MessageCreatedEvent(
+                    tenant_id=str(tenant_id),
+                    session_id=str(message.session_id),
+                    message_id=str(message.message_id),
+                    role=message.role,
+                    content=message.content,
+                    sender_user_id=str(message.sender_user_id),
+                    created_at=message.created_at.isoformat(),
+                    metadata=getattr(message, "message_metadata", None),
+                )
+            )
+        except Exception as e:
+            logger.warning("ws_broadcast_admin_message_failed", error=str(e))
 
         logger.info(
             "admin_message_sent",

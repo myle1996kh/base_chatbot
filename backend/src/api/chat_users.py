@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Body, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 import uuid
+from pydantic import BaseModel, Field
 
 from src.config import get_db
 from src.models.chat_user import ChatUser
@@ -26,6 +27,13 @@ logger = get_logger(__name__)
 from src.api.auth import generate_token
 
 router = APIRouter(prefix="/api", tags=["chat-users"])
+
+
+class ChatUserRefreshRequest(BaseModel):
+    """Request schema for refreshing a chat user token."""
+
+    email: Optional[str] = Field(None, description="Chat user email")
+    user_id: Optional[str] = Field(None, description="Chat user UUID")
 
 
 @router.post("/{tenant_id}/chat_users", response_model=ChatUserResponse)
@@ -118,6 +126,72 @@ async def create_chat_user(
             "create_chat_user_error",
             tenant_id=tenant_id,
             email=request.email,
+            error=str(e),
+        )
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.post("/{tenant_id}/chat_users/refresh", response_model=ChatUserResponse)
+async def refresh_chat_user_token(
+    tenant_id: str = Path(..., description="Tenant UUID"),
+    request: ChatUserRefreshRequest = Body(...),
+    db: Session = Depends(get_db),
+) -> ChatUserResponse:
+    """
+    Refresh (re-issue) a chat user JWT token if the user exists.
+
+    - Accepts email or user_id for lookup (tenant-scoped).
+    - Updates last_active timestamp.
+    - Returns ChatUserResponse with a new token.
+    """
+    try:
+        if not request.email and not request.user_id:
+            raise HTTPException(status_code=400, detail="email or user_id is required")
+
+        # Validate tenant exists
+        tenant = db.query(Tenant).filter(Tenant.tenant_id == tenant_id).first()
+        if not tenant:
+            raise HTTPException(status_code=404, detail="Tenant not found")
+
+        query = db.query(ChatUser).filter(ChatUser.tenant_id == tenant_id)
+        if request.email:
+            query = query.filter(ChatUser.email == request.email.lower())
+        elif request.user_id:
+            query = query.filter(ChatUser.user_id == request.user_id)
+
+        user = query.first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Chat user not found")
+
+        # Update activity and issue new token
+        user.last_active = datetime.utcnow()
+        db.commit()
+
+        token = generate_token(
+            user_id=str(user.user_id),
+            tenant_id=tenant_id,
+            role="chat_user"
+        )
+
+        logger.info(
+            "chat_user_token_refreshed",
+            tenant_id=tenant_id,
+            user_id=user.user_id,
+            email=user.email,
+        )
+
+        response = ChatUserResponse.from_orm(user)
+        response.token = token
+        return response
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            "refresh_chat_user_token_error",
+            tenant_id=tenant_id,
+            email=request.email,
+            user_id=request.user_id,
             error=str(e),
         )
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

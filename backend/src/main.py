@@ -155,6 +155,10 @@ async def startup_event():
         )
         # Continue without rate limiting - it's not critical for startup
 
+    # Attach realtime components
+    app.state.websocket_manager = websocket_manager
+    app.state.websocket_bus = websocket_bus
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -192,7 +196,9 @@ async def root():
 
 
 # Import and include routers
-from src.api import chat, sessions, auth, supporter, chat_users, sse
+from src.api import chat, sessions, auth, supporter, chat_users, sse, ws
+from src.services.websocket_manager import websocket_manager
+from src.services.websocket import websocket_bus
 
 # Authentication endpoints (Phase 0)
 app.include_router(auth.router, tags=["auth"])
@@ -204,6 +210,8 @@ app.include_router(sessions.router, tags=["sessions"])
 
 # SSE endpoints for real-time messaging
 app.include_router(sse.router, tags=["sse"])
+# WebSocket endpoint for real-time messaging
+app.include_router(ws.router, tags=["websocket"])
 
 # Supporter chat endpoints (Phase 9 - Escalation)
 app.include_router(supporter.router, tags=["supporter"])

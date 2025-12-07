@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tenant, UserInfo, Message, Topic } from '../types';
 import { sendMessage, getApiBaseUrl } from '../services/chatService';
+import { refreshChatUserToken } from '../services/chatUserService';
+import { useSessionChannel } from '../hooks/useSessionChannel';
 import { escalateSession, detectAutoEscalation } from '../services/escalationService';
 import { getAgentNameFromMessage } from '../src/config/topic-agent-mapping';
 import { SendIcon, PaperclipIcon, XMarkIcon, SparklesIcon, UserCircleIcon } from './icons';
@@ -171,81 +173,77 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ tenant, userInfo, initialTopicI
     }
   }, [initialSessionId]);
 
-  // SSE connection for real-time updates (replaces polling)
-  useEffect(() => {
-    if (!sessionId) return;
+    // WebSocket channel for real-time updates
+  const handleRealtimeEvent = (event: any) => {
+    if (!event || !event.type) return;
 
-    const baseUrl = getApiBaseUrl();
-    const sseUrl = `${baseUrl}/api/${tenant.id}/session/${sessionId}/stream`;
+    if (event.type === "message_created") {
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === event.message_id)) return prev;
+        return [
+          ...prev,
+          {
+            id: event.message_id,
+            text: event.content,
+            sender: event.role === "supporter" ? "supporter" : event.role === "user" ? "user" : "ai",
+            timestamp: event.created_at,
+            supporterName: event.metadata?.supporter_name,
+          },
+        ];
+      });
+    } else if (event.type === "escalation_status_update") {
+      const previousStatus = escalationStatus;
+      if (event.escalation_status && event.escalation_status !== "none" && event.escalation_status !== "resolved") {
+        setIsEscalated(true);
+        setEscalationStatus(event.escalation_status);
+      } else if (event.escalation_status === "resolved") {
+        setIsEscalated(false);
+        setEscalationStatus("resolved");
 
-    console.log('üîå SSE: Connecting to', sseUrl);
-    const eventSource = new EventSource(sseUrl);
-
-    eventSource.onopen = () => console.log('‚úÖ SSE connected');
-
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-
-        if (data.type === 'new_message') {
-          // Add new message from supporter
-          setMessages((prev) => {
-            // Avoid duplicates
-            if (prev.some(m => m.id === data.message.message_id)) return prev;
-
-            return [...prev, {
-              id: data.message.message_id,
-              text: data.message.content,
-              sender: data.message.role === 'supporter' ? 'supporter' : 'ai',
-              timestamp: data.message.created_at,
-              supporterName: data.message.supporter_name,
-            }];
-          });
-        } else if (data.type === 'escalation_status_update') {
-          // Handle escalation status updates
-          const previousStatus = escalationStatus;
-
-          if (data.escalation_status && data.escalation_status !== 'none' && data.escalation_status !== 'resolved') {
-            setIsEscalated(true);
-            setEscalationStatus(data.escalation_status);
-          } else if (data.escalation_status === 'resolved') {
-            setIsEscalated(false);
-            setEscalationStatus('resolved');
-
-            // Add resolution message if status changed
-            if (previousStatus !== 'resolved' && previousStatus !== 'none') {
-              setMessages(prev => {
-                const hasResolutionMessage = prev.some(m =>
-                  m.text.includes('‚úÖ Y√™u c·∫ßu c·ªßa b·∫°n ƒë√£ ƒë∆∞·ª£c gi·∫£i quy·∫øt')
-                );
-                if (!hasResolutionMessage) {
-                  return [...prev, {
-                    id: `system-resolved-${Date.now()}`,
-                    text: '‚úÖ Y√™u c·∫ßu c·ªßa b·∫°n ƒë√£ ƒë∆∞·ª£c gi·∫£i quy·∫øt b·ªüi nh√¢n vi√™n h·ªó tr·ª£. B·∫°n c√≥ th·ªÉ y√™u c·∫ßu h·ªó tr·ª£ l·∫°i n·∫øu c·∫ßn.',
-                    sender: 'ai',
-                    timestamp: new Date().toISOString(),
-                  }];
-                }
-                return prev;
-              });
+        if (previousStatus !== "resolved" && previousStatus !== "none") {
+          setMessages(prev => {
+            const hasResolutionMessage = prev.some(m =>
+              m.text.includes("Éo. YA¶u c†ß15u c†Ø15a b†ß≠n é`Aú é`í¯†Øúc gi†ßúi quy†ß®t")
+            );
+            if (!hasResolutionMessage) {
+              return [...prev, {
+                id: `system-resolved-${Date.now()}`,
+                text: "Éo. YA¶u c†ß15u c†Ø15a b†ß≠n é`Aú é`í¯†Øúc gi†ßúi quy†ß®t b†ØYi nhAõn viA¶n h†Ø- tr†Øú. B†ß≠n cA3 th†Øü yA¶u c†ß15u h†Ø- tr†Øú l†ß≠i n†ß®u c†ß15n.",
+                sender: "ai",
+                timestamp: new Date().toISOString(),
+              }];
             }
-          }
+            return prev;
+          });
         }
-      } catch (error) {
-        console.error('SSE parse error:', error);
       }
-    };
+    }
+  };
 
-    eventSource.onerror = (error) => {
-      console.error('‚ùå SSE error:', error);
-      eventSource.close();
-    };
+  const [authToken, setAuthToken] = useState<string | undefined>(localStorage.getItem("chat_token") || undefined);
 
-    return () => {
-      console.log('üîå SSE: Disconnecting');
-      eventSource.close();
-    };
-  }, [sessionId, tenant.id, escalationStatus]);
+  useEffect(() => {
+    setAuthToken(localStorage.getItem("chat_token") || undefined);
+  }, []);
+
+  useSessionChannel({
+    tenantId: tenant.id,
+    sessionId,
+    token: authToken || "",
+    enabled: !!sessionId && !!authToken,
+    onEvent: handleRealtimeEvent,
+    onTokenUpdated: (t) => {
+      localStorage.setItem("chat_token", t);
+      setAuthToken(t);
+    },
+    refreshToken: async () => {
+      const res = await refreshChatUserToken(tenant.id, { userId });
+      if (res.success && res.data?.token) {
+        return res.data.token;
+      }
+      return undefined;
+    },
+  });
 
   useEffect(() => {
     // Save chat history whenever it changes
@@ -784,3 +782,4 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ tenant, userInfo, initialTopicI
 };
 
 export default ChatWidget;
+

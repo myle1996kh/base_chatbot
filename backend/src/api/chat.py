@@ -23,6 +23,7 @@ from src.services.llm_manager import llm_manager
 from src.models.tenant_llm_config import TenantLLMConfig
 from src.services.escalation_service import get_escalation_service
 from pydantic import BaseModel
+from src.services.websocket import websocket_bus, MessageCreatedEvent
 
 logger = get_logger(__name__)
 
@@ -151,6 +152,60 @@ async def chat_endpoint(
         )
         db.add(user_message)
         db.commit()
+        db.refresh(user_message)
+
+        # Broadcast user message to WebSocket subscribers (best effort)
+        try:
+            await websocket_bus.publish_message_created(
+                MessageCreatedEvent(
+                    tenant_id=tenant_id,
+                    session_id=str(session.session_id),
+                    message_id=str(user_message.message_id),
+                    role=user_message.role,
+                    content=user_message.content,
+                    sender_user_id=str(user_message.sender_user_id) if user_message.sender_user_id else None,
+                    created_at=user_message.created_at.isoformat(),
+                    metadata=getattr(user_message, "message_metadata", None),
+                )
+            )
+        except Exception as e:
+            logger.warning("ws_broadcast_user_message_failed", error=str(e))
+        db.refresh(user_message)
+
+        # Broadcast user message to WebSocket subscribers (best effort)
+        try:
+            await websocket_bus.publish_message_created(
+                MessageCreatedEvent(
+                    tenant_id=tenant_id,
+                    session_id=str(session.session_id),
+                    message_id=str(user_message.message_id),
+                    role=user_message.role,
+                    content=user_message.content,
+                    sender_user_id=str(user_message.sender_user_id) if user_message.sender_user_id else None,
+                    created_at=user_message.created_at.isoformat(),
+                    metadata=getattr(user_message, "message_metadata", None),
+                )
+            )
+        except Exception as e:
+            logger.warning("ws_broadcast_user_message_failed", error=str(e))
+        db.refresh(user_message)
+
+        # Broadcast user message to WebSocket subscribers (best effort)
+        try:
+            await websocket_bus.publish_message_created(
+                MessageCreatedEvent(
+                    tenant_id=tenant_id,
+                    session_id=str(session.session_id),
+                    message_id=str(user_message.message_id),
+                    role=user_message.role,
+                    content=user_message.content,
+                    sender_user_id=str(user_message.sender_user_id) if user_message.sender_user_id else None,
+                    created_at=user_message.created_at.isoformat(),
+                    metadata=getattr(user_message, "message_metadata", None),
+                )
+            )
+        except Exception as e:
+            logger.warning("ws_broadcast_user_message_failed", error=str(e))
 
         logger.info(
             "user_message_received",
@@ -225,6 +280,60 @@ async def chat_endpoint(
         session.last_message_at = datetime.now(timezone.utc)
 
         db.commit()
+        db.refresh(assistant_message)
+
+        # Broadcast assistant message to WebSocket subscribers (best effort)
+        try:
+            await websocket_bus.publish_message_created(
+                MessageCreatedEvent(
+                    tenant_id=tenant_id,
+                    session_id=str(session.session_id),
+                    message_id=str(assistant_message.message_id),
+                    role=assistant_message.role,
+                    content=assistant_message.content,
+                    sender_user_id=str(assistant_message.sender_user_id) if assistant_message.sender_user_id else None,
+                    created_at=assistant_message.created_at.isoformat(),
+                    metadata=getattr(assistant_message, "message_metadata", None),
+                )
+            )
+        except Exception as e:
+            logger.warning("ws_broadcast_assistant_message_failed", error=str(e))
+        db.refresh(assistant_message)
+
+        # Broadcast assistant message to WebSocket subscribers (best effort)
+        try:
+            await websocket_bus.publish_message_created(
+                MessageCreatedEvent(
+                    tenant_id=tenant_id,
+                    session_id=str(session.session_id),
+                    message_id=str(assistant_message.message_id),
+                    role=assistant_message.role,
+                    content=assistant_message.content,
+                    sender_user_id=str(assistant_message.sender_user_id) if assistant_message.sender_user_id else None,
+                    created_at=assistant_message.created_at.isoformat(),
+                    metadata=getattr(assistant_message, "message_metadata", None),
+                )
+            )
+        except Exception as e:
+            logger.warning("ws_broadcast_assistant_message_failed", error=str(e))
+        db.refresh(assistant_message)
+
+        # Broadcast assistant message to WebSocket subscribers (best effort)
+        try:
+            await websocket_bus.publish_message_created(
+                MessageCreatedEvent(
+                    tenant_id=tenant_id,
+                    session_id=str(session.session_id),
+                    message_id=str(assistant_message.message_id),
+                    role=assistant_message.role,
+                    content=assistant_message.content,
+                    sender_user_id=str(assistant_message.sender_user_id) if assistant_message.sender_user_id else None,
+                    created_at=assistant_message.created_at.isoformat(),
+                    metadata=getattr(assistant_message, "message_metadata", None),
+                )
+            )
+        except Exception as e:
+            logger.warning("ws_broadcast_assistant_message_failed", error=str(e))
 
         # Calculate response time
         duration_ms = (time.time() - start_time) * 1000
