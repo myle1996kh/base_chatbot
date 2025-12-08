@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.6
 # Multi-stage Dockerfile for ITL Chatbot - Full Stack Application
 # Builds both frontend (React) and backend (FastAPI) in a single image
 

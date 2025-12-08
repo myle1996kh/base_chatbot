@@ -33,7 +33,7 @@ class LoginRequest(BaseModel):
 
 
 class LoginResponse(BaseModel):
-    """Login response with user info and token."""
+    """Login response with user info and tokens."""
     user_id: str
     email: str
     username: str
@@ -41,7 +41,8 @@ class LoginResponse(BaseModel):
     role: str
     tenant_id: str
     # Note: Token generation requires private key - MVP uses mock token
-    token: str = None
+    token: str = None  # Access token (24h)
+    refresh_token: str = None  # Refresh token (30 days)
     status: str = "active"
 
     @field_validator('user_id', 'tenant_id', mode='before')
@@ -140,17 +141,18 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     )
 
 
-def generate_token(user_id: str, tenant_id: str, role: str) -> str:
+def generate_token(user_id: str, tenant_id: str, role: str, token_type: str = "access") -> str:
     """
     Generate JWT token for user using RS256 algorithm.
 
     Uses the private key from jwt_private.pem for signing.
-    Tokens are valid for 24 hours.
+    Supports both access tokens (24h) and refresh tokens (30 days).
 
     Args:
         user_id: User UUID
         tenant_id: Tenant UUID
         role: User role
+        token_type: "access" (24h) or "refresh" (30 days)
 
     Returns:
         JWT token string (RS256 signed)
@@ -169,13 +171,20 @@ def generate_token(user_id: str, tenant_id: str, role: str) -> str:
             with open(private_key_path, 'r') as f:
                 private_key = f.read()
             
+            # Different expiry for access vs refresh tokens
+            if token_type == "refresh":
+                expiry = timedelta(days=30)
+            else:  # access
+                expiry = timedelta(hours=24)
+            
             payload = {
                 "sub": user_id,
                 "tenant_id": tenant_id,
                 "roles": [role],
+                "token_type": token_type,  # Important: distinguish token types
                 "email": "",  # Can be added if needed
                 "iat": datetime.utcnow(),
-                "exp": datetime.utcnow() + timedelta(hours=24)
+                "exp": datetime.utcnow() + expiry
             }
             
             token = jwt.encode(payload, private_key, algorithm='RS256')
@@ -186,6 +195,7 @@ def generate_token(user_id: str, tenant_id: str, role: str) -> str:
                 "jwt_token_generated",
                 user_id=user_id,
                 tenant_id=tenant_id,
+                token_type=token_type,
                 algorithm="RS256"
             )
             
@@ -195,16 +205,18 @@ def generate_token(user_id: str, tenant_id: str, role: str) -> str:
             logger.error(
                 "jwt_generation_error",
                 error=str(e),
-                user_id=user_id
+                user_id=user_id,
+                token_type=token_type
             )
             # Fall through to mock token
     
     # Development/Fallback mode: Use mock token
     # This is acceptable when DISABLE_AUTH=true or private key not available
-    mock_token = f"mock_jwt.{user_id}.{tenant_id}.{role}"
+    mock_token = f"mock_jwt.{user_id}.{tenant_id}.{role}.{token_type}"
     logger.warning(
         "using_mock_token",
         user_id=user_id,
+        token_type=token_type,
         reason="jwt_private.pem not found or error loading - using mock token for development"
     )
     
@@ -363,8 +375,9 @@ def login(
         db.add(user)
         db.commit()
 
-        # Generate token
-        token = generate_token(str(user.user_id), request.tenant_id, user.role)
+        # Generate both access and refresh tokens
+        access_token = generate_token(str(user.user_id), request.tenant_id, user.role, "access")
+        refresh_token = generate_token(str(user.user_id), request.tenant_id, user.role, "refresh")
 
         logger.info(
             "user_login_successful",
@@ -381,7 +394,8 @@ def login(
             display_name=user.display_name,
             role=user.role,
             tenant_id=request.tenant_id,
-            token=token,
+            token=access_token,
+            refresh_token=refresh_token,
             status=user.status
         )
 
@@ -398,6 +412,88 @@ def login(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Login failed"
         )
+
+
+class RefreshRequest(BaseModel):
+    """Request to refresh access token."""
+    refresh_token: str
+
+
+class RefreshResponse(BaseModel):
+    """Response with new access token."""
+    access_token: str
+
+
+@router.post("/refresh", response_model=RefreshResponse, status_code=status.HTTP_200_OK)
+def refresh_access_token(request: RefreshRequest) -> RefreshResponse:
+    """
+    Refresh access token using refresh token.
+    
+    This is a PUBLIC endpoint (no auth required).
+    Validates refresh token and issues new access token.
+    NO DATABASE NEEDED - stateless JWT validation.
+    
+    Args:
+        request: Refresh token
+    
+    Returns:
+        New access token (24h)
+    
+    Raises:
+        HTTPException: If refresh token is invalid or expired
+    """
+    try:
+        # Decode and validate refresh token
+        payload = decode_jwt(request.refresh_token)
+        
+        # Verify this is actually a refresh token
+        token_type = payload.get("token_type")
+        if token_type != "refresh":
+            logger.warning(
+                "refresh_token_invalid_type",
+                token_type=token_type,
+                user_id=payload.get("sub")
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type - expected refresh token"
+            )
+        
+        # Extract user info from refresh token
+        user_id = payload.get("sub")
+        tenant_id = payload.get("tenant_id")
+        roles = payload.get("roles", [])
+        role = roles[0] if roles else "tenant_user"
+        
+        # Generate new access token
+        new_access_token = generate_token(
+            user_id,
+            tenant_id,
+            role,
+            "access"
+        )
+        
+        logger.info(
+            "access_token_refreshed",
+            user_id=user_id,
+            tenant_id=tenant_id,
+            role=role
+        )
+        
+        return RefreshResponse(access_token=new_access_token)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            "refresh_token_error",
+            error=str(e)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token"
+        )
+
 
 
 # ============================================================================

@@ -38,6 +38,7 @@ export interface LoginResponse {
   role: string; // 'tenant_user', 'supporter', 'admin'
   tenant_id: string;
   token: string;
+  refresh_token: string;  // NEW: Refresh token (30 days)
   status: string; // 'active', 'inactive', 'suspended'
 }
 
@@ -138,6 +139,11 @@ export async function login(
     }
 
     const data: LoginResponse = await response.json();
+
+    // Store both tokens
+    localStorage.setItem('jwtToken', data.token);
+    localStorage.setItem('refreshToken', data.refresh_token);  // NEW
+    localStorage.setItem('currentUser', JSON.stringify(data));
 
     return {
       success: true,
@@ -452,8 +458,54 @@ export function isSupporter(): boolean {
   return getUserRole() === 'supporter';
 }
 
+/**
+ * Refresh access token using refresh token
+ * 
+ * @returns New access token or null if refresh failed
+ */
+export async function refreshAccessToken(): Promise<string | null> {
+  try {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      console.warn('No refresh token found');
+      return null;
+    }
+
+    const url = `${API_CONFIG.BASE_URL}/api/auth/refresh`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+      signal: AbortSignal.timeout(API_CONFIG.TIMEOUT_MS),
+    });
+
+    if (!response.ok) {
+      console.error('Failed to refresh token:', response.status);
+      // Refresh token expired or invalid → Logout
+      logout();
+      return null;
+    }
+
+    const data = await response.json();
+    const newAccessToken = data.access_token;
+
+    // Update access token in localStorage
+    localStorage.setItem('jwtToken', newAccessToken);
+    console.log('Access token refreshed successfully');
+
+    return newAccessToken;
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+    logout();
+    return null;
+  }
+}
+
 export function logout(): void {
   localStorage.removeItem('jwtToken');
+  localStorage.removeItem('refreshToken');  // NEW: Remove refresh token too
   localStorage.removeItem('currentUser');
   console.log('User logged out');
 }
@@ -480,6 +532,7 @@ export default {
   hasRole,
   isAdmin,
   isSupporter,
+  refreshAccessToken,  // NEW
   logout,
   setApiBaseUrl,
   getApiBaseUrl,
