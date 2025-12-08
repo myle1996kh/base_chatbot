@@ -14,8 +14,6 @@ htmlcov/
 # Virtual environments
 .venv/
 venv/
-ENV/
-env/
 
 # Node.js
 node_modules/
@@ -39,10 +37,8 @@ frontend/dist/
 .gitattributes
 
 # Environment files (should be passed at runtime)
-.env
 .env.local
 .env.*.local
-backend/.env
 
 # Documentation
 README.md
