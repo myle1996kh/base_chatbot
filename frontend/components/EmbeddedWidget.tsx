@@ -6,7 +6,7 @@ import { getUserSessions, getSessionDetailPublic } from '../services/sessionServ
 import { XMarkIcon, ClockIcon, SparklesIcon, UserCircleIcon } from './icons';
 import MessageInput from './shared/MessageInput';
 import EscalationDialog from './shared/EscalationDialog';
-import { AVAILABLE_AGENTS, AgentName } from '../src/config/topic-agent-mapping';
+import { AVAILABLE_AGENTS, AgentName, AGENT_NAMES } from '../src/config/topic-agent-mapping';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -39,7 +39,7 @@ const EmbeddedWidget: React.FC<EmbeddedWidgetProps> = ({
     const [isEscalated, setIsEscalated] = useState(false);
     const [showEscalationDialog, setShowEscalationDialog] = useState(false);
     const [escalationReason, setEscalationReason] = useState('');
-    const [selectedAgent, setSelectedAgent] = useState<AgentName | null>(null);
+    const [selectedAgent, setSelectedAgent] = useState<AgentName | null>(AGENT_NAMES.SUPPORT);
 
     // History Toggle State
     const [showHistory, setShowHistory] = useState(false);
