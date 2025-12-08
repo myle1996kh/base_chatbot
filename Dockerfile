@@ -33,6 +33,7 @@ FROM python:3.11-slim as backend-builder
 # Set working directory
 WORKDIR /app
 
+# Copy .env vào container 
 # Install UV (copy binaries from official uv image)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
@@ -81,6 +82,9 @@ RUN useradd -m -u 1000 appuser
 
 # Set working directory
 WORKDIR /app
+
+# Copy .env vào container 
+COPY backend/.env /app/.env
 
 # Copy Python virtual environment + backend code from builder
 COPY --from=backend-builder /app/.venv /app/.venv
