@@ -84,7 +84,7 @@ RUN useradd -m -u 1000 appuser
 WORKDIR /app
 
 # Copy .env vào container 
-COPY backend/.env /app/src/.env
+COPY backend/.env /app/.env
 
 # Copy Python virtual environment + backend code from builder
 COPY --from=backend-builder /app/.venv /app/.venv
