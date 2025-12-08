@@ -16,7 +16,7 @@ import os
 # Number of worker processes
 # Formula: (2 x CPU cores) + 1
 # Can be overridden with WORKERS env var
-workers = int(os.getenv("WORKERS", multiprocessing.cpu_count() * 2 + 1))
+workers = 2
 
 # Worker class - use Uvicorn workers for ASGI support
 worker_class = "uvicorn.workers.UvicornWorker"
