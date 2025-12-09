@@ -232,7 +232,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 
 # Mount the frontend/dist directory
-frontend_dist = Path(__file__).parent.parent.parent / "frontend" / "dist"
+
+frontend_dist = Path(__file__).parent.parent / "frontend" / "dist"
+
 if frontend_dist.exists():
     app.mount("/assets", StaticFiles(directory=str(frontend_dist / "assets")), name="assets")
 
