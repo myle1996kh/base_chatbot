@@ -51,25 +51,6 @@ app = FastAPI(
 
 # Add middleware to handle OPTIONS requests explicitly (before CORS middleware)
 # This ensures CORS preflight requests are processed before any auth dependencies
-@app.middleware("http")
-async def handle_cors_preflight(request: Request, call_next):
-    """
-    Middleware to handle CORS preflight (OPTIONS) requests.
-    Returns 200 OK immediately without processing dependencies.
-    """
-    if request.method == "OPTIONS":
-        return JSONResponse(
-            status_code=200,
-            content={},
-            headers={
-                "Access-Control-Allow-Origin": request.headers.get("Origin", "*"),
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization",
-                "Access-Control-Allow-Credentials": "true",
-                "Access-Control-Max-Age": "3600",
-            }
-        )
-    return await call_next(request)
 
 # Configure CORS
 app.add_middleware(
