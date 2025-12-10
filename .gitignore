@@ -27,3 +27,5 @@ coverage/
 Dockerfile.backup
 docs/
 notebook/
+BUILD_GUIDE.md
+nul

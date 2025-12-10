@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     WIDGET_BASE_URL: str = Field(default="")
 
     # CORS Settings
-    CORS_ORIGINS: str = Field(default="https://chatbot.vela.com.vn")
+    CORS_ORIGINS: str = Field(default="https://localhost:8000")
 
     # Rate Limiting
     DEFAULT_RATE_LIMIT_RPM: int = Field(default=60)
