@@ -7,8 +7,9 @@
  * - Session persistence
  */
 
-import { getJWTToken, setApiBaseUrl, getApiBaseUrl, getCurrentUser } from './authService';
+import { getJWTToken, setApiBaseUrl, getCurrentUser } from './authService';
 import { SessionSummary, SessionDetail } from '../types';
+import { API_CONFIG } from '@/src/config/api';
 
 export interface SessionsListResponse {
   total: number;
@@ -16,7 +17,7 @@ export interface SessionsListResponse {
 }
 
 // API Base URL
-let API_BASE_URL = getApiBaseUrl() || 'http://localhost:8000';
+let API_BASE_URL = API_CONFIG.BASE_URL;
 
 function resolveBaseUrl(raw: string | null | undefined): string {
   try {

@@ -7,7 +7,8 @@
  * - Caching tenant data in localStorage
  */
 
-import { setApiBaseUrl, getApiBaseUrl } from './authService';
+import { setApiBaseUrl } from './authService';
+import { API_CONFIG } from '@/src/config/api';
 
 export interface TenantResponse {
   tenant_id: string;
@@ -24,7 +25,7 @@ export interface TenantsListResponse {
 }
 
 // API Base URL
-let API_BASE_URL = getApiBaseUrl() || 'http://localhost:8000';
+let API_BASE_URL = API_CONFIG.BASE_URL;
 
 export function setTenantApiBaseUrl(url: string): void {
   API_BASE_URL = url;

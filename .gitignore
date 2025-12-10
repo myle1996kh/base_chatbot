@@ -1,7 +1,12 @@
 venv/
 .venv/
 __pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
 *.pyc
+*/*.pyc
+*/*/*.pyc
 *.pyo
 *.pyd
 .Python
@@ -22,4 +27,13 @@ coverage/
 .env.testing
 .env.production
 Dockerfile.backup
+backend/.env
+logs/
+pyproject.toml
+uv.lock
 NUL
+docker-compose.yml
+Dockerfile
+backend/.env
+docker-compose.yml
+Dockerfile
