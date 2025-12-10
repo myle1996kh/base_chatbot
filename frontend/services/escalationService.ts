@@ -9,7 +9,8 @@
  * - Escalation queue management
  */
 
-import { getJWTToken, setApiBaseUrl, getApiBaseUrl } from './authService';
+import { getJWTToken, setApiBaseUrl } from './authService';
+import { API_CONFIG } from '@/src/config/api';
 
 // Type definitions
 export interface AutoEscalationDetectionResponse {
@@ -54,7 +55,7 @@ export interface SupportersResponse {
 }
 
 // API Base URL
-let API_BASE_URL = getApiBaseUrl() || 'http://localhost:8000';
+let API_BASE_URL = API_CONFIG.BASE_URL;
 
 export function setEscalationApiBaseUrl(url: string): void {
   API_BASE_URL = url;
@@ -133,7 +134,7 @@ export async function escalateSessionPublic(
   tenantId: string,
   sessionId: string,
   reason: string
-): Promise<{success: boolean; session_id: string; escalation_status: string; message: string}> {
+): Promise<{ success: boolean; session_id: string; escalation_status: string; message: string }> {
   try {
     const response = await fetch(
       `${API_BASE_URL}/api/${tenantId}/session/${sessionId}/escalate`,

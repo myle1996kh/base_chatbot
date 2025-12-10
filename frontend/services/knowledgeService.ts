@@ -8,8 +8,10 @@
 /**
  * API Configuration
  */
+import { API_CONFIG as CENTRALIZED_CONFIG } from '@/src/config/api';
+
 const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  BASE_URL: CENTRALIZED_CONFIG.BASE_URL,
   UPLOAD_ENDPOINT: '/api/admin/tenants/{tenant_id}/knowledge/upload-document',
   STATS_ENDPOINT: '/api/admin/tenants/{tenant_id}/knowledge/stats',
   GET_ALL_ENDPOINT: '/api/admin/tenants/{tenant_id}/knowledge/all',

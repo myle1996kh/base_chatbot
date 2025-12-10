@@ -33,6 +33,7 @@ FROM python:3.11-slim as backend-builder
 # Set working directory
 WORKDIR /app
 
+# Copy .env vào container 
 # Install UV (copy binaries from official uv image)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 

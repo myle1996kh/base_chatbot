@@ -1,0 +1,18 @@
+/**
+ * Chat Service
+ * 
+ * Handles chat message sending and receiving for the ITL chatbot.
+ * Supports both regular chat and test chat endpoints.
+ */
+
+import { getJWTToken } from './tokenService';
+import { ChatMessage, ChatResponse } from '../types/chat';
+import { fetchWithAuth } from './apiClient';
+import { API_CONFIG as CENTRALIZED_CONFIG } from '@/src/config/api';
+
+const API_CONFIG = {
+  BASE_URL: CENTRALIZED_CONFIG.BASE_URL,
+  CHAT_ENDPOINT: '/api/{tenant_id}/chat',
+  TEST_CHAT_ENDPOINT: '/api/{tenant_id}/test/chat',
+  TIMEOUT_MS: 30000,
+};

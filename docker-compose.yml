@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: chatbot
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD:}
+      POSTGRES_PASSWORD: Postgres123!
     ports:
       - "5432:5432"
     volumes:
@@ -51,7 +51,7 @@ services:
     env_file:
       - backend/.env
     environment:
-      DATABASE_URL: postgresql://postgres:Postgres123!@172.23.178.103:32001/chatbot
+      DATABASE_URL: postgresql+psycopg2://postgres:Postgres123!@host:5432/chatbot
 
       # Redis connection (nếu Redis cũng external thì sửa tương tự; nếu dùng redis service bên trên thì giữ redis://redis:6379)
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}

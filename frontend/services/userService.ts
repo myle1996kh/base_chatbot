@@ -8,7 +8,8 @@
  * - Deleting users
  */
 
-import { getJWTToken, getApiBaseUrl } from './authService';
+import { getJWTToken } from './authService';
+import { API_CONFIG } from '@/src/config/api';
 
 export interface User {
   user_id: string;
@@ -38,7 +39,7 @@ export interface UpdateUserRequest {
   status?: string;
 }
 
-const API_BASE_URL = getApiBaseUrl() || 'http://localhost:8000';
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 /**
  * Get list of all users with optional filtering

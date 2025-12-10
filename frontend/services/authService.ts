@@ -9,8 +9,10 @@
 /**
  * API Configuration
  */
+import { API_CONFIG as CENTRALIZED_CONFIG } from '@/src/config/api';
+
 const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  BASE_URL: CENTRALIZED_CONFIG.BASE_URL,
   LOGIN_ENDPOINT: '/api/auth/login',
   CREATE_USER_ENDPOINT: '/api/auth/users',
   GET_USER_ENDPOINT: '/api/auth/users/{user_id}',

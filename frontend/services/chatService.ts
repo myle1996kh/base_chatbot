@@ -11,8 +11,10 @@ import { getAgentNameFromMessage } from '../src/config/topic-agent-mapping';
 /**
  * API Configuration
  */
+import { API_CONFIG as CENTRALIZED_CONFIG } from '@/src/config/api';
+
 const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  BASE_URL: CENTRALIZED_CONFIG.BASE_URL,
   CHAT_ENDPOINT: '/api/{tenant_id}/chat',
   TEST_CHAT_ENDPOINT: '/api/{tenant_id}/test/chat',
   LOGIN_ENDPOINT: '/api/auth/login',

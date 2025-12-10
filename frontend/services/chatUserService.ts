@@ -4,9 +4,10 @@
  * Handles customer/end-user account management.
  * Creates or retrieves chat users, creates sessions, and ends sessions.
  */
+import { API_CONFIG as CENTRALIZED_CONFIG } from '@/src/config/api';
 
 const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  BASE_URL: CENTRALIZED_CONFIG.BASE_URL,
   TIMEOUT_MS: 30000,
 };
 
