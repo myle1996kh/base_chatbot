@@ -62,7 +62,7 @@ export interface MessageDetail {
   session_id: string;
   role: string;
   content: string;
-  created_at: string;
+  timestamp: string;
   supporter_name?: string;
   attachments?: Attachment[];
 }

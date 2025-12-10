@@ -92,7 +92,7 @@ const EmbeddedWidget: React.FC<EmbeddedWidgetProps> = ({
                         id: msg.message_id,
                         text: msg.content,
                         sender: msg.role === 'supporter' ? 'supporter' : (msg.role === 'user' ? 'user' : 'ai'),
-                        timestamp: msg.created_at,
+                        timestamp: msg.timestamp,
                         supporterName: msg.supporter_name,
                         fileInfo: msg.attachments && msg.attachments.length > 0 ? {
                             name: msg.attachments[0].filename,
