@@ -15,7 +15,7 @@
  */
 
 export const API_CONFIG = {
-    BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://chatbot.vela.com.vn',
+    BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://chatbot.vela.com.vn',
 } as const;
 
 /**
