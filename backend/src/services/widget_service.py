@@ -65,14 +65,8 @@ class WidgetService:
         """
         # Use environment-based default if not provided
         if not api_base_url:
-            if settings.WIDGET_BASE_URL:
-                api_base_url = settings.WIDGET_BASE_URL
-            elif settings.ENVIRONMENT == "production":
-                # Fallback for production if config missing
-                api_base_url = "https://api.agenthub.example.com"
-            else:
-                # Development default
-                api_base_url = f"http://{settings.API_HOST}:{settings.API_PORT}"
+            # Development default
+            api_base_url = f"http://{settings.API_HOST}:{settings.API_PORT}"
 
         # Generate iframe embed code
         embed_code = f'''<!-- AgentHub Chatbot Widget -->

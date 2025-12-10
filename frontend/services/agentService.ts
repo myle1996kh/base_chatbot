@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { getJWTToken } from './authService';
+import { API_CONFIG } from '@/src/config/api';
 
-const API_URL = 'http://localhost:8000/api/admin';
+const API_URL = `${API_CONFIG.BASE_URL}/api/admin`;
 
 export interface AgentTool {
     tool_id: string;

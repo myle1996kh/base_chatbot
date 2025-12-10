@@ -3,8 +3,9 @@
  */
 
 import { Tenant, Supporter, ChatSession } from '../types';
+import { API_CONFIG } from '@/src/config/api';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 // ============================================================================
 // Types
