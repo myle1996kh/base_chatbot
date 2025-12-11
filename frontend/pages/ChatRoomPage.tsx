@@ -6,8 +6,10 @@ import { resolveEscalation } from '../services/escalationService';
 import type { SessionDetail, MessageDetail } from '../types';
 import SupportLayout from '../components/SupportLayout';
 import { ExtractIcon } from '../components/icons';
+import { API_CONFIG } from '@/src/config/api';
 
 type Category = 'bug' | 'feature_request' | 'guideline' | 'invoice' | 'tracking' | 'other';
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 const categoryLabels: Record<Category, string> = {
     bug: 'Bug/Error',
@@ -46,7 +48,7 @@ const ChatRoomPage: React.FC = () => {
         // Setup SSE connection for real-time messages
         if (!user || !sessionId) return;
 
-        const apiBaseUrl = 'http://localhost:8000'; // TODO: Get from config
+        const apiBaseUrl = API_BASE_URL;
         const eventSource = new EventSource(
             `${apiBaseUrl}/api/${user.tenant_id}/session/${sessionId}/stream`
         );
@@ -327,7 +329,7 @@ const ChatRoomPage: React.FC = () => {
                                                 {msg.role === 'supporter' ? 'You' : msg.role === 'user' ? 'User' : 'AI'}
                                             </div>
                                             <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                            <p className="text-xs opacity-75 mt-1">{formatTime(msg.created_at)}</p>
+                                            <p className="text-xs opacity-75 mt-1">{formatTime(msg.timestamp)}</p>
                                         </div>
                                     </div>
                                 </div>

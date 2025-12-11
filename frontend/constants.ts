@@ -1,5 +1,7 @@
 import { Tenant, Supporter } from './types';
+import { API_CONFIG } from '@/src/config/api';
 
+const API_BASE_URL = API_CONFIG.BASE_URL;
 // DEFAULT TENANT - Used only as fallback for App.tsx styling
 // Real tenants are fetched dynamically from backend - see tenantService.ts
 export const TENANTS: Tenant[] = [
@@ -7,7 +9,7 @@ export const TENANTS: Tenant[] = [
     id: 'default',
     name: 'Default',
     config: {
-      apiUrl: 'http://localhost:8000/api/rag',
+      apiUrl: API_BASE_URL + '/api/rag',
       apiKey: 'default-key',
     },
     theme: {

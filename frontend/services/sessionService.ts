@@ -21,12 +21,12 @@ let API_BASE_URL = API_CONFIG.BASE_URL;
 
 function resolveBaseUrl(raw: string | null | undefined): string {
   try {
-    const base = (raw && raw.trim()) ? raw : 'http://localhost:8000';
+    const base = (raw && raw.trim()) ? raw : API_BASE_URL;
     const u = new URL(base);
-    if (!u.port) u.port = '8000';
+    if (!u.port) u.port = '80';
     return u.toString().replace(/\/$/, '');
   } catch {
-    return 'http://localhost:8000';
+    return API_BASE_URL;
   }
 }
 
