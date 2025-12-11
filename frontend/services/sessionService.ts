@@ -19,17 +19,6 @@ export interface SessionsListResponse {
 // API Base URL
 let API_BASE_URL = API_CONFIG.BASE_URL;
 
-function resolveBaseUrl(raw: string | null | undefined): string {
-  try {
-    const base = (raw && raw.trim()) ? raw : API_BASE_URL;
-    const u = new URL(base);
-    if (!u.port) u.port = '8000';
-    return u.toString().replace(/\/$/, '');
-  } catch {
-    return API_BASE_URL;
-  }
-}
-
 export function setSessionApiBaseUrl(url: string): void {
   API_BASE_URL = url;
   setApiBaseUrl(url);
@@ -53,7 +42,7 @@ export async function getUserSessions(
   options?: { limit?: number; offset?: number }
 ): Promise<SessionSummary[]> {
   try {
-    const base = resolveBaseUrl(API_BASE_URL);
+    const base = API_BASE_URL;
     const token = jwt || getJWTToken();
     if (!token) {
       console.warn('No JWT token available, cannot fetch sessions');
@@ -104,7 +93,7 @@ export async function getUserSessions(
  */
 export async function getTenantSessions(tenantId: string): Promise<SessionSummary[]> {
   try {
-    const base = resolveBaseUrl(API_BASE_URL);
+    const base = API_BASE_URL;
     const token = getJWTToken();
     if (!token) {
       console.warn('No JWT token available, cannot fetch tenant sessions');
@@ -151,7 +140,7 @@ export async function getSessionDetail(
   jwt?: string
 ): Promise<SessionDetail | null> {
   try {
-    const base = resolveBaseUrl(API_BASE_URL);
+    const base = API_BASE_URL;
     const token = jwt || getJWTToken();
     if (!token) {
       console.warn('No JWT token available, cannot fetch session detail');
@@ -202,7 +191,7 @@ export async function getSessionDetailPublic(
   jwt?: string
 ): Promise<SessionDetail | null> {
   try {
-    const base = resolveBaseUrl(API_BASE_URL);
+    const base = API_BASE_URL;
     const token = jwt || getJWTToken();
     if (!token) {
       console.warn('No JWT token available, cannot fetch session detail');
@@ -255,7 +244,7 @@ export async function getSupporterSessions(
   jwt?: string
 ): Promise<SessionSummary[]> {
   try {
-    const base = resolveBaseUrl(API_BASE_URL);
+    const base = API_BASE_URL;
     const token = jwt || getJWTToken();
     if (!token) {
       console.warn('❌ No JWT token available, cannot fetch supporter sessions');
@@ -366,7 +355,7 @@ export async function sendSupporterMessage(
   message: string
 ): Promise<any> {
   try {
-    const base = resolveBaseUrl(API_BASE_URL);
+    const base = API_BASE_URL;
     const token = getJWTToken();
     if (!token) {
       throw new Error('No JWT token available');
