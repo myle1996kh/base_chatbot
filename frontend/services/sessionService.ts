@@ -23,7 +23,7 @@ function resolveBaseUrl(raw: string | null | undefined): string {
   try {
     const base = (raw && raw.trim()) ? raw : API_BASE_URL;
     const u = new URL(base);
-    if (!u.port) u.port = '80';
+    if (!u.port) u.port = '8000';
     return u.toString().replace(/\/$/, '');
   } catch {
     return API_BASE_URL;
