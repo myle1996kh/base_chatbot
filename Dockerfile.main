@@ -1,0 +1,68 @@
+# Dockerfile.main - Production Dockerfile
+# Combines pre-built environments (backend + frontend) with source code
+# Uses ARG to reference pre-built images for venv and node_modules
+
+FROM python:3.11-slim as runtime
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_NO_UPDATE_CHECK=1
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser
+
+WORKDIR /app
+
+# ============================================================================
+# Copy ENVIRONMENT (venv) from pre-built backend image
+# ============================================================================
+ARG BACKEND_IMAGE=chatbot-backend:latest
+COPY --from=${BACKEND_IMAGE} /app/.venv /app/.venv
+
+# Ensure we use the venv Python
+ENV PATH="/app/.venv/bin:$PATH"
+
+# ============================================================================
+# Copy ENVIRONMENT (node_modules) from pre-built frontend image
+# ============================================================================
+ARG FRONTEND_IMAGE=chatbot-frontend:latest
+COPY --from=${FRONTEND_IMAGE} /app/frontend/node_modules ./frontend/node_modules
+
+# ============================================================================
+# Copy SOURCE CODE from local
+# ============================================================================
+COPY backend/src ./src
+COPY backend/alembic.ini ./alembic.ini
+COPY backend/alembic ./alembic/
+COPY backend/gunicorn.conf.py /app/gunicorn.conf.py
+
+# Copy frontend source and build config
+COPY frontend/src ./frontend/src
+COPY frontend/public ./frontend/public
+COPY frontend/package.json ./frontend/package.json
+COPY frontend/vite.config.ts ./frontend/vite.config.ts
+COPY frontend/tsconfig.json ./frontend/tsconfig.json
+COPY frontend/tailwind.config.ts ./frontend/tailwind.config.ts
+
+# Build frontend
+RUN cd ./frontend && npm run build && rm -rf node_modules src public
+
+# Create uploads directory for file storage
+RUN mkdir -p ./uploads && chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)" || exit 1
+
+# Run the application with Gunicorn
+CMD ["gunicorn", "src.main:app", "-c", "/app/gunicorn.conf.py"]

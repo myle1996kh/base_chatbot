@@ -1,0 +1,23 @@
+# Dockerfile for ITL Chatbot Frontend - Node.js Environment Only
+# This image contains node_modules dependencies ONLY (NO source code)
+
+FROM node:20-alpine as builder
+
+WORKDIR /app/frontend
+
+# Copy package files only (NO source code)
+COPY frontend/package*.json ./
+
+# Install frontend dependencies
+RUN npm ci
+
+
+# Stage 2: Runtime - Environment only
+FROM node:20-alpine
+
+WORKDIR /app/frontend
+
+# Copy ONLY node_modules from builder (NO code)
+COPY --from=builder /app/frontend/node_modules ./node_modules
+
+# This is an environment-only image - no CMD or exposed ports

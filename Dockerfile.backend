@@ -1,0 +1,52 @@
+# Dockerfile for ITL Chatbot Backend - FastAPI + Python
+# Stage 1: Builder
+FROM python:3.11-slim as builder
+
+WORKDIR /app
+
+# Install UV (copy binaries from official uv image)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Avoid hardlink warnings when using cache mounts
+ENV UV_LINK_MODE=copy
+
+# Install build dependencies for packages that need compilation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependency files only (NO source code)
+COPY pyproject.toml uv.lock ./
+
+# Install all dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev
+
+
+# Stage 2: Runtime
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_NO_UPDATE_CHECK=1
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser
+
+WORKDIR /app
+
+# Copy ONLY Python virtual environment (NO code) from builder
+COPY --from=builder /app/.venv /app/.venv
+
+# Ensure we use the venv Python
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Switch to non-root user
+USER appuser
+
+# This is an environment-only image - no CMD or exposed ports
