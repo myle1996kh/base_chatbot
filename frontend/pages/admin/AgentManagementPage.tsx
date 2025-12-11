@@ -137,13 +137,13 @@ const AgentManagementPage: React.FC = () => {
                     <p className="text-gray-500">Configure AI agents, their models, and tools.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button
+                    {/* <button
                         onClick={handleReloadCache}
                         className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
                         <ArrowPathIcon className="h-5 w-5 mr-2 text-gray-500" />
                         Reload Cache
-                    </button>
+                    </button> */}
                     <button
                         onClick={() => handleOpenModal()}
                         className="flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700"
@@ -320,7 +320,12 @@ const AgentManagementPage: React.FC = () => {
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-medium text-gray-900">{tool.name}</p>
-                                                    <p className="text-xs text-gray-500 truncate">{tool.description}</p>
+                                                    <p 
+                                                        className="text-xs text-gray-500 line-clamp-2" 
+                                                        title={tool.description}
+                                                        >
+                                                        {tool.description}
+                                                    </p>
                                                 </div>
                                             </div>
                                         ))}
