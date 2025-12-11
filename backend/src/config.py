@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO")
     API_HOST: str = Field(default="0.0.0.0")
     API_PORT: int = Field(default=8000)
+    API_BASE_URL: str = Field(default="https://chatbot.vela.com.vn")
 
     # Development Auth Toggle (Get User Token Bypass - Tạm thời False để test)
     # When true, JWT auth can be bypassed for specific dependencies

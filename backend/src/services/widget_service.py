@@ -64,10 +64,10 @@ class WidgetService:
             HTML iframe embed code snippet
         """
         # Use environment-based default if not provided
-        if not api_base_url:
-            # Development default
-            api_base_url = f"http://{settings.API_HOST}:{settings.API_PORT}"
-
+        if not api_base_url:               
+            api_base_url = settings.API_BASE_URL
+        # else:
+        #     api_base_url = f"http://{settings.API_HOST}:{settings.API_PORT}"
         # Generate iframe embed code
         embed_code = f'''<!-- AgentHub Chatbot Widget -->
 <script>
