@@ -19,14 +19,6 @@ export interface SessionsListResponse {
 // API Base URL
 let API_BASE_URL = API_CONFIG.BASE_URL;
 
-export function setSessionApiBaseUrl(url: string): void {
-  API_BASE_URL = url;
-  setApiBaseUrl(url);
-}
-
-export function getSessionApiBaseUrl(): string {
-  return API_BASE_URL;
-}
 
 /**
  * Get list of sessions for a user (requires auth)
