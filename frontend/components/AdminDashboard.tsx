@@ -441,7 +441,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, onSwitchToDem
                   }
                   return pickDisplayText(msg.content);
                 })(),
-                timestamp: msg.created_at,
+                timestamp: msg.timestamp,
               })) || []
             };
           });

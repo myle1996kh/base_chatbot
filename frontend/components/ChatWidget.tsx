@@ -646,9 +646,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ tenant, userInfo, initialTopicI
                   )}
                   <div
                     className="prose prose-sm max-w-none markdown-content"
-                    style={{
-                      whiteSpace: 'pre-wrap',
-                    }}
+                    
                   >
                     <style>{`
                     .markdown-content p { margin: 0.3em 0; }

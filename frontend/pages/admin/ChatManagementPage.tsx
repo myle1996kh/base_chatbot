@@ -6,6 +6,8 @@ import { getTenants as getTenantsFromBackend, getSupporters as getSupportersFrom
 import { getApiBaseUrl, getJWTToken, getCurrentUser, LoginResponse } from '../../services/authService';
 import { escalateSession, assignSupporter as assignSupporterToEscalation } from '../../services/escalationService';
 import { ChatBubbleIcon, UserCircleIcon, ClockIcon } from '../../components/icons';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const ChatManagementPage: React.FC = () => {
     // Authentication state
@@ -237,7 +239,7 @@ const ChatManagementPage: React.FC = () => {
                                     }
                                     return pickDisplayText(msg.content);
                                 })(),
-                                timestamp: msg.created_at,
+                                timestamp: msg.timestamp,
                             })) || []
                         };
                     });
@@ -564,7 +566,40 @@ const ChatManagementPage: React.FC = () => {
                                                 </span>
                                                 <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
                                             </div>
-                                            <div className="whitespace-pre-wrap text-sm">{msg.text}</div>
+                                            <div
+                                                className="prose prose-sm max-w-none markdown-content"                                                
+                                            >
+                                            <style>{`
+                                                .markdown-content p { margin: 0.3em 0; }
+                                                .markdown-content p.nguon { font-style: italic; }
+                                                .markdown-content h1, .markdown-content h2, .markdown-content h3, .markdown-content h4 { margin: 0.2em 0; font-weight: bold; }
+                                                .markdown-content h1 { font-size: 1.8em; }
+                                                .markdown-content h2 { font-size: 1.4em; }
+                                                .markdown-content h3 { font-size: 1.15em; }
+                                                .markdown-content ul, .markdown-content ol { margin: 0.3em 0; padding-left: 1.5em; }
+                                                .markdown-content ul { list-style-type: disc; }
+                                                .markdown-content ol { list-style-type: decimal; }
+                                                .markdown-content li { margin: 0.1em 0; }
+                                                .markdown-content code { background-color: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: 3px; font-family: monospace; }
+                                                .markdown-content pre { background-color: #f6f8fa; padding: 1em; border-radius: 6px; overflow-x: auto; font-family: monospace; }
+                                                .markdown-content blockquote { margin: 1em 0; padding-left: 1em; border-left: 4px solid ; color: #666; font-style: italic; }
+                                                .markdown-content a { color: ; text-decoration: underline; }
+                                            `}</style>
+                                                <Markdown
+                                                    remarkPlugins={[remarkGfm]}
+                                                    components={{
+                                                        p: (props) => {
+                                                            const content = Array.isArray(props.children) ? props.children.join('') : String(props.children || '');
+                                                            return content.includes('Nguồn:')
+                                                                ? <p className="nguon" {...props} />
+                                                                : <p {...props} />;
+                                                        }
+                                                    }}
+                                                >
+                                                    {msg.text}
+                                                </Markdown>
+                                            </div>
+
                                         </div>
 
                                         {/* Checkbox for user messages - appears on right */}

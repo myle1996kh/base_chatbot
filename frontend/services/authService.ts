@@ -6,11 +6,21 @@
  * Supports multiple user roles: tenant_user, supporter, admin
  */
 
+import { API_CONFIG as CENTRALIZED_CONFIG } from '@/src/config/api';
+import { authFetch } from './http_client'; // Đảm bảo đường dẫn đúng
+
+// Polyfill cho AbortSignal.timeout nếu trình duyệt chưa hỗ trợ
+if (!AbortSignal.timeout) {
+  (AbortSignal as any).timeout = function (ms: number) {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), ms);
+    return controller.signal;
+  };
+}
+
 /**
  * API Configuration
  */
-import { API_CONFIG as CENTRALIZED_CONFIG } from '@/src/config/api';
-
 const API_CONFIG = {
   BASE_URL: CENTRALIZED_CONFIG.BASE_URL,
   LOGIN_ENDPOINT: '/api/auth/login',
@@ -25,7 +35,6 @@ const API_CONFIG = {
 /**
  * Auth Service Interfaces
  */
-
 export interface LoginRequest {
   username: string;
   password: string;
@@ -37,11 +46,11 @@ export interface LoginResponse {
   email: string;
   username: string;
   display_name?: string;
-  role: string; // 'tenant_user', 'supporter', 'admin'
+  role: string;
   tenant_id: string;
   token: string;
-  refresh_token: string;  // NEW: Refresh token (30 days)
-  status: string; // 'active', 'inactive', 'suspended'
+  refresh_token: string;
+  status: string;
 }
 
 export interface CreateUserRequest {
@@ -73,9 +82,9 @@ export interface UserResponse {
   email: string;
   username: string;
   display_name?: string;
-  role: string; // 'tenant_user', 'supporter', 'admin'
+  role: string;
   tenant_id: string;
-  status: string; // 'active', 'inactive', 'suspended'
+  status: string;
   created_at?: string;
   last_login?: string;
 }
@@ -94,9 +103,6 @@ export interface UserListResponse {
   total: number;
 }
 
-/**
- * Current authenticated user session
- */
 export interface AuthSession {
   user: LoginResponse;
   token: string;
@@ -105,6 +111,7 @@ export interface AuthSession {
 
 /**
  * Login user with username and password
+ * LƯU Ý: Vẫn dùng fetch thường vì endpoint này public, không cần gửi kèm Token cũ.
  */
 export async function login(
   username: string,
@@ -142,9 +149,9 @@ export async function login(
 
     const data: LoginResponse = await response.json();
 
-    // Store both tokens
+    // Store tokens
     localStorage.setItem('jwtToken', data.token);
-    localStorage.setItem('refreshToken', data.refresh_token);  // NEW
+    localStorage.setItem('refreshToken', data.refresh_token);
     localStorage.setItem('currentUser', JSON.stringify(data));
 
     return {
@@ -161,18 +168,21 @@ export async function login(
   }
 }
 
+/**
+ * Create User
+ * Sửa đổi: Bỏ tham số adminToken, dùng authFetch
+ */
 export async function createUser(
-  request: CreateUserRequest,
-  adminToken: string
+  request: CreateUserRequest
 ): Promise<AuthServiceResponse<UserResponse>> {
   try {
     const url = `${API_CONFIG.BASE_URL}${API_CONFIG.CREATE_USER_ENDPOINT}`;
 
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${adminToken}`,
+        // Authorization header được tự động thêm bởi authFetch
       },
       body: JSON.stringify(request),
       signal: AbortSignal.timeout(API_CONFIG.TIMEOUT_MS),
@@ -207,18 +217,18 @@ export async function createUser(
   }
 }
 
+/**
+ * Get Single User
+ * Sửa đổi: Bỏ tham số adminToken, dùng authFetch
+ */
 export async function getUser(
-  userId: string,
-  adminToken: string
+  userId: string
 ): Promise<AuthServiceResponse<UserResponse>> {
   try {
-    const url = `${API_CONFIG.BASE_URL}${API_CONFIG.GET_USER_ENDPOINT.replace('{user_id}', userId)}`;
+    const url = `${API_CONFIG.BASE_URL}/api/auth/users/${userId}`;
 
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${adminToken}`,
-      },
       signal: AbortSignal.timeout(API_CONFIG.TIMEOUT_MS),
     });
 
@@ -245,17 +255,16 @@ export async function getUser(
   }
 }
 
-export async function getUsers(
-  adminToken: string
-): Promise<AuthServiceResponse<UserListResponse>> {
+/**
+ * Get All Users
+ * Sửa đổi: Bỏ tham số adminToken, dùng authFetch
+ */
+export async function getUsers(): Promise<AuthServiceResponse<UserListResponse>> {
   try {
     const url = `${API_CONFIG.BASE_URL}/api/auth/users`;
 
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${adminToken}`,
-      },
       signal: AbortSignal.timeout(API_CONFIG.TIMEOUT_MS),
     });
 
@@ -282,19 +291,22 @@ export async function getUsers(
   }
 }
 
+/**
+ * Update User
+ * Sửa đổi: Bỏ tham số adminToken, dùng authFetch
+ */
 export async function updateUser(
   userId: string,
-  request: UpdateUserRequest,
-  adminToken: string
+  request: UpdateUserRequest
 ): Promise<AuthServiceResponse<UserResponse>> {
   try {
-    const url = `${API_CONFIG.BASE_URL}${API_CONFIG.UPDATE_USER_ENDPOINT.replace('{user_id}', userId)}`;
+    // Sử dụng template literal cho an toàn thay vì replace trên config
+    const url = `${API_CONFIG.BASE_URL}/api/auth/users/${userId}`;
 
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${adminToken}`,
       },
       body: JSON.stringify(request),
       signal: AbortSignal.timeout(API_CONFIG.TIMEOUT_MS),
@@ -323,18 +335,18 @@ export async function updateUser(
   }
 }
 
+/**
+ * Delete User
+ * Sửa đổi: Bỏ tham số adminToken, dùng authFetch
+ */
 export async function deleteUser(
-  userId: string,
-  adminToken: string
+  userId: string
 ): Promise<AuthServiceResponse> {
   try {
-    const url = `${API_CONFIG.BASE_URL}${API_CONFIG.DELETE_USER_ENDPOINT.replace('{user_id}', userId)}`;
+    const url = `${API_CONFIG.BASE_URL}/api/auth/users/${userId}`;
 
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${adminToken}`,
-      },
       signal: AbortSignal.timeout(API_CONFIG.TIMEOUT_MS),
     });
 
@@ -359,19 +371,21 @@ export async function deleteUser(
   }
 }
 
+/**
+ * Change Password
+ * Sửa đổi: Bỏ tham số userToken, dùng authFetch
+ */
 export async function changePassword(
   oldPassword: string,
-  newPassword: string,
-  userToken: string
+  newPassword: string
 ): Promise<AuthServiceResponse> {
   try {
     const url = `${API_CONFIG.BASE_URL}${API_CONFIG.CHANGE_PASSWORD_ENDPOINT}`;
 
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
       },
       body: JSON.stringify({
         old_password: oldPassword,
@@ -402,6 +416,7 @@ export async function changePassword(
   }
 }
 
+
 export function getCurrentUser(): LoginResponse | null {
   try {
     const userJson = localStorage.getItem('currentUser');
@@ -426,13 +441,23 @@ export function hasRole(requiredRole: string): boolean {
   return user?.role === requiredRole;
 }
 
+// cập nhật để hỗ trợ Unicode (Tiếng Việt)
 function decodeJWT(token: string): Record<string, any> | null {
   try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-
-    const decoded = atob(parts[1]);
-    return JSON.parse(decoded);
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+    
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split('')
+        .map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
   } catch (error) {
     console.error('Failed to decode JWT:', error);
     return null;
@@ -462,8 +487,8 @@ export function isSupporter(): boolean {
 
 /**
  * Refresh access token using refresh token
- * 
- * @returns New access token or null if refresh failed
+ * LƯU Ý: Hàm này MỚI BẮT BUỘC dùng fetch thường.
+ * Không được dùng authFetch ở đây để tránh vòng lặp vô tận.
  */
 export async function refreshAccessToken(): Promise<string | null> {
   try {
@@ -485,7 +510,6 @@ export async function refreshAccessToken(): Promise<string | null> {
 
     if (!response.ok) {
       console.error('Failed to refresh token:', response.status);
-      // Refresh token expired or invalid → Logout
       logout();
       return null;
     }
@@ -493,7 +517,6 @@ export async function refreshAccessToken(): Promise<string | null> {
     const data = await response.json();
     const newAccessToken = data.access_token;
 
-    // Update access token in localStorage
     localStorage.setItem('jwtToken', newAccessToken);
     console.log('Access token refreshed successfully');
 
@@ -507,9 +530,11 @@ export async function refreshAccessToken(): Promise<string | null> {
 
 export function logout(): void {
   localStorage.removeItem('jwtToken');
-  localStorage.removeItem('refreshToken');  // NEW: Remove refresh token too
+  localStorage.removeItem('refreshToken');
   localStorage.removeItem('currentUser');
   console.log('User logged out');
+ 
+  window.location.href = '/login';
 }
 
 export function setApiBaseUrl(baseUrl: string): void {
@@ -534,7 +559,7 @@ export default {
   hasRole,
   isAdmin,
   isSupporter,
-  refreshAccessToken,  // NEW
+  refreshAccessToken,
   logout,
   setApiBaseUrl,
   getApiBaseUrl,
