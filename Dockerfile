@@ -2,64 +2,22 @@
 # Builds both frontend (React) and backend (FastAPI) in a single image
 
 # ============================================================================
-# Stage 1: Frontend Builder - Build React frontend with Vite
+# Stage 1: Frontend - Use pre-built image from FPT Cloud registry
 # ============================================================================
-FROM node:20-alpine as frontend-builder
+FROM registry.fke.fptcloud.com/e4c3b7f7-c2f1-4578-9666-55262c3dd980/chatbot-frontend:0.0.1 as frontend-builder
 
-# Set working directory for frontend
-WORKDIR /app/frontend
-
-# Copy package files first (for better Docker cache utilization)
-COPY frontend/package*.json ./
-COPY frontend/vite.config.ts ./
-COPY frontend/tsconfig.json ./
-COPY frontend/tailwind.config.ts ./
-
-# Install frontend dependencies (using npm ci for reproducible builds)
-RUN npm ci
-
-# Copy frontend source code
-COPY frontend/ ./
-
-# Build frontend (creates optimized static files in dist/)
-RUN npm run build
+# No build needed - image already contains built frontend in /app/frontend/dist
 
 
 # ============================================================================
-# Stage 2: Backend Builder - Install Python dependencies with UV
+# Stage 2: Backend - Use pre-built image from FPT Cloud registry
 # ============================================================================
-FROM python:3.11-slim as backend-builder
+FROM registry.fke.fptcloud.com/e4c3b7f7-c2f1-4578-9666-55262c3dd980/chatbot-backend:0.0.1 as backend-builder
 
-# Set working directory
-WORKDIR /app
-
-# Copy .env vào container 
-# Install UV (copy binaries from official uv image)
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-# Avoid hardlink warnings when using cache mounts
-ENV UV_LINK_MODE=copy
-
-# (Optional but safer) build deps for packages that need compilation
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy dependency files first for caching
-COPY pyproject.toml uv.lock ./
-
-# Install only third-party dependencies first (faster rebuilds)
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --no-dev --no-install-project
-
-# Copy backend application code
-COPY backend/src ./src
-COPY backend/alembic.ini ./alembic.ini
-COPY backend/alembic ./alembic/
-
-# Now install the project itself into the environment
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --no-dev
+# No build needed - image already contains:
+# - Python virtual environment at /app/.venv
+# - Backend source code at /app/src
+# - Alembic migrations at /app/alembic
 
 
 # ============================================================================
