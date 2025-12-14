@@ -222,9 +222,11 @@ class User(Base):
     current_sessions_count = Integer (default=0)
 🔔 SSE (Server-Sent Events) - REALTIME UPDATES
 Luồng SSE:
-Chat User connects to: /api/{tenant_id}/sse/{session_id}
+Chat User connects to: `/api/{tenant_id}/sse/{session_id}`
    ↓
 Backend gửi events:
+
+```text
 1. type: "escalation_status_update"
    data: {
      escalation_status: "pending" | "assigned" | "resolved",
@@ -235,7 +237,11 @@ Backend gửi events:
    data: {
      message_id, role, content, timestamp
    }
+```
+
 Frontend xử lý SSE (EmbeddedWidget.tsx:156-170):
+
+```tsx
 if (data.type === 'escalation_status_update') {
     if (data.escalation_status !== 'none' && data.escalation_status !== 'resolved') {
         setIsEscalated(true);
@@ -247,11 +253,12 @@ if (data.type === 'escalation_status_update') {
         }]);
     }
 }
+```
 ✅ KIỂM TRA LOGIC - KẾT QUẢ
 ✅ Chat User (End User):
 ✅ Button "Yêu cầu hỗ trợ" hiển thị khi chưa escalate
 ✅ Dialog tiếng Việt đầy đủ
-✅ Gọi đúng API: POST /api/{tenant_id}/session/{session_id}/escalate
+✅ Gọi đúng API: `POST /api/{tenant_id}/session/{session_id}/escalate`
 ✅ KHÔNG cần JWT token (public endpoint)
 ✅ Hiển thị badge "Đã yêu cầu hỗ trợ" khi escalated
 ✅ Nhận SSE update realtime khi resolved

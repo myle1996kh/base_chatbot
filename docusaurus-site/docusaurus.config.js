@@ -13,15 +13,17 @@ const config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://your-docusaurus-site.com',
+  url: 'https://myle1996kh.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl: '/base_chatbot/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'your-org', // Usually your GitHub org/user name.
-  projectName: 'chatbot-docs', // Usually your repo name.
+  organizationName: 'myle1996kh', // Usually your GitHub org/user name.
+  projectName: 'base_chatbot', // Usually your repo name.
+  deploymentBranch: 'gh-pages', // Branch for GitHub Pages
+  trailingSlash: false,
 
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
@@ -56,7 +58,7 @@ const config = {
           sidebarPath: './sidebars.js',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/your-org/chatbot-docs/tree/main/',
+          editUrl: 'https://github.com/myle1996kh/base_chatbot/tree/main/docusaurus-site/',
         },
         blog: false, // Disable blog
         theme: {
@@ -89,7 +91,7 @@ const config = {
             position: 'right',
           },
           {
-            href: 'https://github.com/your-org/chatbot',
+            href: 'https://github.com/myle1996kh/base_chatbot',
             label: 'GitHub',
             position: 'right',
           },
@@ -133,7 +135,7 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/your-org/chatbot',
+                href: 'https://github.com/myle1996kh/base_chatbot',
               },
             ],
           },
