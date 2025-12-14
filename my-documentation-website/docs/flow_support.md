@@ -20,20 +20,23 @@ Quy trình:
    ↓
 4. Frontend gọi: escalateSessionPublic(tenantId, sessionId, reason)
    ↓
-5. API: POST /api/{tenant_id}/session/{session_id}/escalate
+5. API: `POST /api/{tenant_id}/session/{session_id}/escalate`
    ↓
 6. Backend cập nhật:
-   - ChatSession.escalation_status = "pending"
-   - ChatSession.escalation_reason = "{lý do user nhập}"
-   - ChatSession.escalation_requested_at = "{timestamp}"
+   - `ChatSession.escalation_status = "pending"`
+   - `ChatSession.escalation_reason = "{lý do user nhập}"`
+   - `ChatSession.escalation_requested_at = "{timestamp}"`
    ↓
 7. Response trả về:
-   {
-     success: true,
-     session_id: "xxx",
-     escalation_status: "pending",
-     message: "Your session has been escalated..."
-   }
+
+```json
+{
+  "success": true,
+  "session_id": "xxx",
+  "escalation_status": "pending",
+  "message": "Your session has been escalated..."
+}
+```
    ↓
 8. Frontend hiển thị:
    - Badge "Đã yêu cầu hỗ trợ" (màu cam)
@@ -63,6 +66,8 @@ export async function escalateSessionPublic(
 }
 ```
 Backend (chat.py:727-822):
+
+```python
 @router.post("/{tenant_id}/session/{session_id}/escalate")
 async def public_escalate_session(...):
     """PUBLIC ENDPOINT - No auth required"""
@@ -70,6 +75,7 @@ async def public_escalate_session(...):
     # 2. Call escalation_service.escalate_session()
     # 3. Update DB: escalation_status = "pending"
     # 4. Return PublicEscalationResponse
+```
 ⚠️ Lưu ý:
 ✅ KHÔNG CẦN JWT - Endpoint công khai cho widget user
 ✅ Chỉ validate tenant_id và session_id khớp
@@ -103,13 +109,13 @@ Quy trình:
    - Supporter nhấn "Resolve" / "Đánh dấu đã giải quyết"
    - Có thể nhập "resolution_notes" (ghi chú giải quyết)
    ↓
-7. API: POST /api/admin/tenants/{tenant_id}/escalations/resolve
-   Body: {session_id, resolution_notes}
+7. API: `POST /api/admin/tenants/{tenant_id}/escalations/resolve`
+   Body: `{session_id, resolution_notes}`
    ↓
 8. Backend cập nhật:
    - escalation_status = "resolved"
    - escalation_resolved_at = now()
-   - resolution_notes = "{ghi chú}"
+   - `resolution_notes = "{ghi chú}"`
    ↓
 9. SSE gửi update tới Chat User:
    - User nhận message: "✅ Yêu cầu của bạn đã được giải quyết..."
@@ -117,17 +123,17 @@ Quy trình:
    - Button "Yêu cầu hỗ trợ" hiện lại (có thể escalate lại)
 API Endpoints (Supporter sử dụng):
 // 1. Xem hàng đợi escalation
-GET /api/admin/tenants/{tenant_id}/escalations?status=pending
-→ Trả về: {pending_count, assigned_count, resolved_count, escalations[]}
+`GET /api/admin/tenants/{tenant_id}/escalations?status=pending`
+→ Trả về: `{pending_count, assigned_count, resolved_count, escalations[]}`
 
 // 2. Assign cho chính mình (hoặc admin assign)
-POST /api/admin/tenants/{tenant_id}/escalations/assign
-Body: {session_id, user_id}
+`POST /api/admin/tenants/{tenant_id}/escalations/assign`
+Body: `{session_id, user_id}`
 → Requires: admin role (admin assign cho supporter)
 
 // 3. Resolve escalation
-POST /api/admin/tenants/{tenant_id}/escalations/resolve
-Body: {session_id, resolution_notes}
+`POST /api/admin/tenants/{tenant_id}/escalations/resolve`
+Body: `{session_id, resolution_notes}`
 → Requires: supporter role
 → Supporter CHỈ resolve sessions assigned cho họ
 ⚠️ Quyền hạn Supporter:
@@ -171,24 +177,24 @@ Quy trình:
    - Cập nhật current_sessions_count++
 API Endpoints (Admin sử dụng):
 // 1. Xem TẤT CẢ escalations
-GET /api/admin/tenants/{tenant_id}/escalations
+`GET /api/admin/tenants/{tenant_id}/escalations`
 → Admin có thể xem tất cả, không filter theo assigned_user
 
 // 2. Assign cho supporter
-POST /api/admin/tenants/{tenant_id}/escalations/assign
-Body: {session_id, user_id}
+`POST /api/admin/tenants/{tenant_id}/escalations/assign`
+Body: `{session_id, user_id}`
 
 // 3. Resolve bất kỳ escalation nào
-POST /api/admin/tenants/{tenant_id}/escalations/resolve
-Body: {session_id, resolution_notes}
+`POST /api/admin/tenants/{tenant_id}/escalations/resolve`
+Body: `{session_id, resolution_notes}`
 → Admin KHÔNG bị giới hạn ownership
 
 // 4. Xem danh sách supporters
-GET /api/admin/tenants/{tenant_id}/staff
-→ Trả về: {staff: [], total}
+`GET /api/admin/tenants/{tenant_id}/staff`
+→ Trả về: `{staff: [], total}`
 
 // 5. Xem supporters đang available
-GET /api/admin/tenants/{tenant_id}/staff/available
+`GET /api/admin/tenants/{tenant_id}/staff/available`
 → Trả về supporters: online + có capacity
 🗄️ DATABASE SCHEMA
 ChatSession Model:

@@ -28,6 +28,5 @@ backend/.env
 .env.testing
 .env.production
 Dockerfile.backup
-docs/
 notebook/
 frontend/package-lock.json
