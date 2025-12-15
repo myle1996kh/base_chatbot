@@ -7,17 +7,18 @@
 FROM registry.fke.fptcloud.com/e4c3b7f7-c2f1-4578-9666-55262c3dd980/chatbot-frontend:0.0.1 as frontend-builder
 
 # No build needed - image already contains built frontend in /app/frontend/dist
+# Expect: /app/frontend/dist exists inside this image
 
 
 # ============================================================================
 # Stage 2: Backend - Use pre-built image from FPT Cloud registry
 # ============================================================================
-FROM registry.fke.fptcloud.com/e4c3b7f7-c2f1-4578-9666-55262c3dd980/chatbot-backend:0.0.1 as backend-builder
+FROM registry.fke.fptcloud.com/e4c3b7f7-c2f1-4578-9666-55262c3dd980/chatbot-backend:0.0.1 AS backend-env
+
+# Expect: /app/.venv exists inside this image
 
 # No build needed - image already contains:
 # - Python virtual environment at /app/.venv
-# - Backend source code at /app/src
-# - Alembic migrations at /app/alembic
 
 
 # ============================================================================
@@ -42,16 +43,18 @@ RUN useradd -m -u 1000 appuser
 WORKDIR /app
 
 # Copy Python virtual environment + backend code from builder
-COPY --from=backend-builder /app/.venv /app/.venv
-COPY --from=backend-builder /app/src /app/src
-COPY --from=backend-builder /app/alembic.ini /app/alembic.ini
-COPY --from=backend-builder /app/alembic /app/alembic
+
+# --- Backend venv from ENV image ---
+COPY --from=backend-env /app/.venv /app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+# --- Backend code from current repo (GitLab build context) ---
+COPY backend/src /app/src
+COPY backend/alembic.ini /app/alembic.ini
+COPY backend/alembic /app/alembic
 
 # Copy Gunicorn configuration
 COPY backend/gunicorn.conf.py /app/gunicorn.conf.py
-
-# Ensure we use the venv Python/uvicorn
-ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy built frontend from frontend builder stage
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
