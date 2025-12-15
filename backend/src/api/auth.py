@@ -162,8 +162,7 @@ def generate_token(user_id: str, tenant_id: str, role: str, token_type: str = "a
     
     # Load private key from backend directory (not current working directory)
     # This ensures the key is found regardless of where uvicorn is run from
-    backend_dir = Path(__file__).parent.parent  # backend/src/api/auth.py -> backend/
-    private_key_path = backend_dir / "jwt_private.pem"
+    private_key_path = Path("/app/jwt_private.pem")
     
     if private_key_path.exists():
         # Production mode: Use RS256 with private key
