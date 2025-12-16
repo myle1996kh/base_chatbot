@@ -56,6 +56,7 @@ COPY backend/alembic /app/alembic
 # ✅ Copy JWT keys (.pem)
 COPY backend/jwt_private.pem /app/jwt_private.pem
 COPY backend/jwt_public.pem  /app/jwt_public.pem
+COPY backend/.env /app/.env
 
 # Copy Gunicorn configuration
 COPY backend/gunicorn.conf.py /app/gunicorn.conf.py
