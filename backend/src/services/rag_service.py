@@ -9,6 +9,7 @@ This service provides:
 from typing import List, Dict, Any, Optional
 import uuid
 from datetime import datetime
+import pytz
 from langchain_postgres import PGVector
 from langchain_postgres.vectorstores import DistanceStrategy
 from langchain_core.documents import Document
@@ -210,7 +211,7 @@ class RAGService:
             for i, metadata in enumerate(metadatas):
                 metadata["tenant_id"] = str(tenant_id)
                 metadata["doc_id"] = ids[i]
-                metadata["ingested_at"] = datetime.utcnow().isoformat()
+                metadata["ingested_at"] = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')).isoformat()
 
             # Create LangChain Document objects
             langchain_docs = [

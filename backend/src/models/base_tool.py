@@ -1,5 +1,6 @@
 """Base Tool template for tool types (HTTP, RAG, DB, OCR)."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, Text, TIMESTAMP
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
@@ -18,7 +19,7 @@ class BaseTool(Base):
     handler_class = Column(String(255), nullable=False)  # Python class path
     description = Column(Text)  # Tool type description
     default_config_schema = Column(JSONB)  # JSON schema for config validation
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
 
     # Relationships
     tool_configs = relationship("ToolConfig", back_populates="base_tool")

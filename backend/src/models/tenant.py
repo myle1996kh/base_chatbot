@@ -1,5 +1,6 @@
 """Tenant model representing organizations using the system."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, TIMESTAMP
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -17,12 +18,12 @@ class Tenant(Base):
     name = Column(String(255), nullable=False)
     domain = Column(String(255), unique=True)
     status = Column(String(50), nullable=False, default="active", index=True)
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
     updated_at = Column(
         TIMESTAMP,
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
+        onupdate=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
     )
 
     # Relationships

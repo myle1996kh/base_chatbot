@@ -8,7 +8,7 @@ from src.middleware.auth import require_admin_role
 from src.utils.logging import get_logger
 from pydantic import BaseModel
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = get_logger(__name__)
 

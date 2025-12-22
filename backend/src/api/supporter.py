@@ -1,7 +1,8 @@
 """Supporter chat API endpoints for escalation handling."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
+import pytz
 from typing import Optional
 from uuid import UUID
 
@@ -419,7 +420,7 @@ async def supporter_send_message(
         db.add(message)
 
         # Update session's last_message_at timestamp
-        session.last_message_at = datetime.now(timezone.utc)
+        session.last_message_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 
         # Commit
         db.commit()
@@ -560,13 +561,13 @@ async def admin_send_message(
             sender_user_id=current_user_uuid,
             role="supporter",
             content=request.message.strip(),
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
         )
 
         db.add(message)
 
         # Update session's last_message_at
-        session.last_message_at = datetime.now(timezone.utc)
+        session.last_message_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
         db.commit()
         db.refresh(message)
 

@@ -17,7 +17,7 @@ from src.schemas.admin import (
 from pydantic import BaseModel
 from src.middleware.auth import require_admin_role
 from src.utils.logging import get_logger
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = get_logger(__name__)
 

@@ -1,5 +1,6 @@
 """Tenant permission models for agents and tools."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, Boolean, TIMESTAMP, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -19,12 +20,12 @@ class TenantAgentPermission(Base):
     agent_id = Column(UUID(as_uuid=True), ForeignKey("agent_configs.agent_id"), nullable=False)
     enabled = Column(Boolean, nullable=False, default=True, index=True)  # Permission status
     output_override_id = Column(UUID(as_uuid=True), ForeignKey("output_formats.format_id"))
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
     updated_at = Column(
         TIMESTAMP,
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
+        onupdate=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
     )
 
     # Relationships
@@ -47,7 +48,7 @@ class TenantToolPermission(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.tenant_id"), nullable=False)
     tool_id = Column(UUID(as_uuid=True), ForeignKey("tool_configs.tool_id"), nullable=False)
     enabled = Column(Boolean, nullable=False, default=True, index=True)  # Permission status
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
 
     # Relationships
     tenant = relationship("Tenant", back_populates="tool_permissions")

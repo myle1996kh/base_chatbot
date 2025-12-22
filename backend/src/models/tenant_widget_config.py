@@ -1,5 +1,6 @@
 """Tenant Widget Configuration model for iframe embedding."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, Text, Boolean, Integer, TIMESTAMP, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
@@ -46,9 +47,9 @@ class TenantWidgetConfig(Base):
     embed_code_snippet = Column(Text, nullable=True)  # Ready-to-copy HTML snippet
 
     # Metadata
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    last_regenerated_at = Column(TIMESTAMP, nullable=True)  # When widget_key was last rotated
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
+    updated_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')), onupdate=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
+    last_regenerated_at = Column(TIMESTAMP, nullable=True, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))  # When widget_key was last rotated
 
     # Relationships
     tenant = relationship("Tenant", back_populates="widget_config")

@@ -220,9 +220,10 @@ async def chat_endpoint(
         db.add(assistant_message)
 
         # Update session metadata - track last message time
-        from datetime import datetime, timezone
+        from datetime import datetime
+        import pytz
 
-        session.last_message_at = datetime.now(timezone.utc)
+        session.last_message_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 
         db.commit()
 
@@ -634,9 +635,10 @@ async def test_chat_endpoint(
         db.add(assistant_message)
 
         # Update session metadata - track last message time
-        from datetime import datetime, timezone
+        from datetime import datetime
+        import pytz
 
-        session.last_message_at = datetime.now(timezone.utc)
+        session.last_message_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 
         db.commit()
 

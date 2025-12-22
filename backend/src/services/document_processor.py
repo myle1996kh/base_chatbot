@@ -13,6 +13,8 @@ Supported formats:
 
 """
 from typing import List, Dict, Any, Optional
+from datetime import datetime
+import pytz
 from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -512,7 +514,6 @@ class DocumentProcessor:
             - ingested_at: ISO timestamp
             - Any additional_metadata provided
         """
-        from datetime import datetime
 
         try:
             for doc in documents:
@@ -520,7 +521,7 @@ class DocumentProcessor:
                 doc.metadata['tenant_id'] = tenant_id
 
                 # Add timestamp
-                doc.metadata['ingested_at'] = datetime.utcnow().isoformat()
+                doc.metadata['ingested_at'] = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')).isoformat()
 
                 # Add any additional metadata
                 if additional_metadata:

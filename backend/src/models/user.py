@@ -1,5 +1,6 @@
 """User model for authentication and tenant users."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, TIMESTAMP, ForeignKey, UniqueConstraint, Index, Boolean, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -27,8 +28,8 @@ class User(Base):
     display_name = Column(String(255), nullable=True)
     status = Column(String(50), default='active')  # 'active', 'inactive', 'suspended'
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)  # Admin who created
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
+    updated_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')), onupdate=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
     last_login = Column(TIMESTAMP, nullable=True)
 
     # Relationships

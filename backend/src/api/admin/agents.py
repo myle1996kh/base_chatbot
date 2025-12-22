@@ -18,6 +18,7 @@ from src.schemas.admin import (
 from src.middleware.auth import require_admin_role
 from src.utils.logging import get_logger
 from datetime import datetime
+import pytz
 
 logger = get_logger(__name__)
 
@@ -323,7 +324,7 @@ async def update_agent(
                 )
                 db.add(agent_tool)
 
-        agent.updated_at = datetime.utcnow()
+        agent.updated_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
         db.commit()
         db.refresh(agent)
 

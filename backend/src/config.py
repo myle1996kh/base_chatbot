@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO")
     API_HOST: str = Field(default="0.0.0.0")
     API_PORT: int = Field(default=8000)
-    API_BASE_URL: str = Field(default="https://chatbot.vela.com.vn")
+    API_BASE_URL: str = Field(default="http://localhost:8000")
 
     # Development Auth Toggle (Get User Token Bypass - Tạm thời False để test)
     # When true, JWT auth can be bypassed for specific dependencies
@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     WIDGET_BASE_URL: str = Field(default="")
 
     # CORS Settings
-    CORS_ORIGINS: str = Field(default="https://chatbot.vela.com.vn")
+    CORS_ORIGINS: str = Field(default="http://localhost:8000")
 
     # Rate Limiting
     DEFAULT_RATE_LIMIT_RPM: int = Field(default=60)

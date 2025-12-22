@@ -2,6 +2,8 @@
 import secrets
 import uuid
 from typing import Optional
+from datetime import datetime
+import pytz
 from sqlalchemy.orm import Session
 from src.models.tenant_widget_config import TenantWidgetConfig
 from src.utils.encryption import encrypt_api_key
@@ -248,8 +250,7 @@ class WidgetService:
         widget_config.widget_key = new_widget_key
         widget_config.widget_secret = new_widget_secret
         widget_config.embed_code_snippet = new_embed_code
-        from datetime import datetime
-        widget_config.last_regenerated_at = datetime.utcnow()
+        widget_config.last_regenerated_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 
         db.commit()
         db.refresh(widget_config)

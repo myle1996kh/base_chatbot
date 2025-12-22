@@ -1,5 +1,6 @@
 """LLM Model representing available language models from various providers."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, Integer, TIMESTAMP, Boolean, DECIMAL, Index
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
@@ -24,7 +25,7 @@ class LLMModel(Base):
     cost_per_1k_output_tokens = Column(DECIMAL(10, 6), nullable=False)  # Output token cost (USD)
     is_active = Column(Boolean, nullable=False, default=True, index=True)  # Model availability
     capabilities = Column(JSONB)  # Model capabilities (e.g., {"vision": true})
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
 
     # Relationships
     tenant_configs = relationship("TenantLLMConfig", back_populates="llm_model")

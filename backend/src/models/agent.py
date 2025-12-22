@@ -1,5 +1,6 @@
 """Agent configuration and agent-tool junction models."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, Text, Boolean, Integer, TIMESTAMP, ForeignKey, PrimaryKeyConstraint, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -21,12 +22,12 @@ class AgentConfig(Base):
     description = Column(Text)  # Agent description
     handler_class = Column(String(255), nullable=True, default="services.domain_agents.DomainAgent")  # Python class path for custom logic
     is_active = Column(Boolean, nullable=False, default=True, index=True)  # Agent availability
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
     updated_at = Column(
         TIMESTAMP,
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
+        onupdate=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
     )
 
     # Relationships
@@ -51,7 +52,7 @@ class AgentTools(Base):
     agent_id = Column(UUID(as_uuid=True), ForeignKey("agent_configs.agent_id"), nullable=False)
     tool_id = Column(UUID(as_uuid=True), ForeignKey("tool_configs.tool_id"), nullable=False)
     priority = Column(Integer, nullable=False)  # Tool priority (1=highest) for pre-filtering
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
 
     # Relationships
     agent = relationship("AgentConfig", back_populates="agent_tools")

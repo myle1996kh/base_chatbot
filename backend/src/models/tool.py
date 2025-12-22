@@ -1,5 +1,6 @@
 """Tool configuration representing specific tool instances."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, Text, Boolean, TIMESTAMP, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
@@ -21,12 +22,12 @@ class ToolConfig(Base):
     output_format_id = Column(UUID(as_uuid=True), ForeignKey("output_formats.format_id"))
     description = Column(Text)  # Tool description for LLM
     is_active = Column(Boolean, nullable=False, default=True, index=True)  # Tool availability
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
     updated_at = Column(
         TIMESTAMP,
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
+        onupdate=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
     )
 
     # Relationships

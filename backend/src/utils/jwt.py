@@ -5,6 +5,13 @@ from fastapi import HTTPException, status
 from src.config import settings
 
 
+# Error codes for structured error responses
+TOKEN_EXPIRED = "token_expired"
+TOKEN_INVALID = "token_invalid"
+TOKEN_TYPE_MISMATCH = "token_type_mismatch"
+TOKEN_MISSING_CLAIMS = "token_missing_claims"
+
+
 def decode_jwt(token: str, verify_signature: bool = True) -> Dict[str, Any]:
     """
     Decode and validate JWT token using RS256 algorithm.
@@ -43,7 +50,7 @@ def decode_jwt(token: str, verify_signature: bool = True) -> Dict[str, Any]:
                 # If still can't decode, raise error
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail=f"Invalid token format",
+                    detail={"error": TOKEN_INVALID, "message": "Invalid token format"},
                     headers={"WWW-Authenticate": "Bearer"},
                 )
 
@@ -64,13 +71,13 @@ def decode_jwt(token: str, verify_signature: bool = True) -> Dict[str, Any]:
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="JWT token expired",
+            detail={"error": TOKEN_EXPIRED, "message": "JWT token expired"},
             headers={"WWW-Authenticate": "Bearer"},
         )
     except jwt.InvalidTokenError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid JWT token: {str(e)}",
+            detail={"error": TOKEN_INVALID, "message": f"Invalid JWT token: {str(e)}"},
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -109,7 +116,7 @@ def extract_tenant_id(payload: Dict[str, Any]) -> str:
     if not tenant_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="tenant_id not found in JWT token"
+            detail={"error": TOKEN_MISSING_CLAIMS, "message": "tenant_id not found in JWT token"}
         )
     return tenant_id
 
@@ -131,6 +138,6 @@ def extract_user_id(payload: Dict[str, Any]) -> str:
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="sub (user_id) not found in JWT token"
+            detail={"error": TOKEN_MISSING_CLAIMS, "message": "sub (user_id) not found in JWT token"}
         )
     return user_id

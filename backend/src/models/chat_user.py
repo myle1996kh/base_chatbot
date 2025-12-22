@@ -1,5 +1,6 @@
 """ChatUser model for customer/end-user chat accounts."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, TIMESTAMP, ForeignKey, UniqueConstraint, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -23,8 +24,8 @@ class ChatUser(Base):
     email = Column(String(255), nullable=False)
     username = Column(String(255), nullable=False)
     department = Column(String(255), nullable=True)  # Optional department
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
-    last_active = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
+    last_active = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')), onupdate=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
 
     # Relationships
     tenant = relationship("Tenant", back_populates="chat_users")

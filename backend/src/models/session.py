@@ -1,5 +1,6 @@
 """Session model for tracking conversation sessions."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, TIMESTAMP, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
@@ -22,8 +23,8 @@ class ChatSession(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("chat_users.user_id"), nullable=False)  # FK to chat_users table (customers)
     agent_id = Column(UUID(as_uuid=True), ForeignKey("agent_configs.agent_id"))
     thread_id = Column(String(500))  # LangGraph thread ID
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
-    last_message_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, index=True)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
+    last_message_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')), index=True)
     session_metadata = Column("metadata", JSONB)  # Additional session metadata (mapped to "metadata" column)
 
     # Escalation fields

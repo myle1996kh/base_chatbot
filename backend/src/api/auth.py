@@ -7,12 +7,14 @@ from typing import Optional, List, Union
 import bcrypt
 import uuid
 from datetime import datetime, timedelta
+import pytz
 
 from src.config import settings, get_db
 from src.models.user import User
 from src.models.tenant import Tenant
 from src.middleware.auth import require_admin_role, get_current_user
 from src.utils.logging import get_logger
+from src.utils.jwt import TOKEN_TYPE_MISMATCH, TOKEN_INVALID
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 logger = get_logger(__name__)
@@ -159,12 +161,22 @@ def generate_token(user_id: str, tenant_id: str, role: str, token_type: str = "a
     """
     import jwt
     from pathlib import Path
-    
-    # Load private key from backend directory (not current working directory)
-    # This ensures the key is found regardless of where uvicorn is run from
-    private_key_path = Path("/app/jwt_private.pem")
-    
-    if private_key_path.exists():
+
+    # Load private key from backend directory
+    # Try multiple paths: Docker path first, then local development paths
+    backend_dir = Path(__file__).parent.parent.parent  # backend/ directory
+    private_key_paths = [
+        Path("/app/jwt_private.pem"),  # Docker path
+        backend_dir / "jwt_private.pem",  # Local development
+    ]
+
+    private_key_path = None
+    for path in private_key_paths:
+        if path.exists():
+            private_key_path = path
+            break
+
+    if private_key_path and private_key_path.exists():
         # Production mode: Use RS256 with private key
         try:
             with open(private_key_path, 'r') as f:
@@ -182,8 +194,8 @@ def generate_token(user_id: str, tenant_id: str, role: str, token_type: str = "a
                 "roles": [role],
                 "token_type": token_type,  # Important: distinguish token types
                 "email": "",  # Can be added if needed
-                "iat": datetime.utcnow(),
-                "exp": datetime.utcnow() + expiry
+                "iat": datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
+                "exp": datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')) + expiry
             }
             
             token = jwt.encode(payload, private_key, algorithm='RS256')
@@ -370,7 +382,7 @@ def login(
             )
 
         # Update last login
-        user.last_login = datetime.utcnow()
+        user.last_login = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
         db.add(user)
         db.commit()
 
@@ -451,11 +463,12 @@ def refresh_access_token(request: RefreshRequest) -> RefreshResponse:
             logger.warning(
                 "refresh_token_invalid_type",
                 token_type=token_type,
-                user_id=payload.get("sub")
+                user_id=payload.get("sub"),
+                error_code=TOKEN_TYPE_MISMATCH
             )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token type - expected refresh token"
+                detail={"error": TOKEN_TYPE_MISMATCH, "message": "Invalid token type - expected refresh token"}
             )
         
         # Extract user info from refresh token
@@ -486,11 +499,12 @@ def refresh_access_token(request: RefreshRequest) -> RefreshResponse:
     except Exception as e:
         logger.error(
             "refresh_token_error",
-            error=str(e)
+            error=str(e),
+            error_code=TOKEN_INVALID
         )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired refresh token"
+            detail={"error": TOKEN_INVALID, "message": "Invalid or expired refresh token"}
         )
 
 
@@ -582,8 +596,8 @@ def create_user(
             supporter_status="online",  # Set supporter status to online
             max_concurrent_sessions=50,  # Set max concurrent sessions to 50
             created_by=uuid.UUID(admin_payload.get("sub")),
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
+            updated_at=datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
         )
 
         db.add(new_user)
@@ -742,7 +756,7 @@ def update_user(
         if request.status:
             user.status = request.status
 
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 
         db.add(user)
         db.commit()
@@ -1063,7 +1077,7 @@ def change_password(
 
         # Update password
         user.password_hash = hash_password(request.new_password)
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 
         db.add(user)
         db.commit()

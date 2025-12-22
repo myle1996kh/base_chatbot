@@ -1,5 +1,6 @@
 """Message model for individual chat messages within sessions."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, Text, TIMESTAMP, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
@@ -20,7 +21,7 @@ class Message(Base):
     session_id = Column(UUID(as_uuid=True), ForeignKey("sessions.session_id"), nullable=False)
     role = Column(String(50), nullable=False)  # user/assistant/system/supporter
     content = Column(Text, nullable=False)  # Message content
-    created_at = Column("timestamp", TIMESTAMP, nullable=False, default=datetime.utcnow)  # Mapped to "timestamp" column
+    created_at = Column("timestamp", TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))  # Mapped to "timestamp" column
     message_metadata = Column("metadata", JSONB)  # Additional metadata (intent, tool_calls, tokens)
 
     # Sender tracking for human-sent messages

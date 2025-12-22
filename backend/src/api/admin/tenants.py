@@ -2,6 +2,7 @@
 import uuid
 from typing import List, Optional
 from datetime import datetime
+import pytz
 from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -155,8 +156,8 @@ async def create_tenant(
             name=request.name,
             domain=request.domain,
             status=request.status,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
+            updated_at=datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
         )
         db.add(tenant)
         db.commit()
@@ -347,7 +348,7 @@ async def update_tenant(
         if request.status is not None:
             tenant.status = request.status
 
-        tenant.updated_at = datetime.utcnow()
+        tenant.updated_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
         db.commit()
         db.refresh(tenant)
 
@@ -402,7 +403,7 @@ async def delete_tenant(
 
         # Soft delete: set status to inactive
         tenant.status = "inactive"
-        tenant.updated_at = datetime.utcnow()
+        tenant.updated_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
         db.commit()
 
         logger.info(
@@ -709,8 +710,8 @@ async def create_tenant_full(
             name=request.name,
             domain=request.domain,
             status=request.status,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
+            updated_at=datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
         )
         db.add(tenant)
         

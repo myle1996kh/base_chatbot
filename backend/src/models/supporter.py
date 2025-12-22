@@ -1,5 +1,6 @@
 """Supporter model for staff handling escalated conversations."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, TIMESTAMP, ForeignKey, Integer, UniqueConstraint, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -23,8 +24,8 @@ class Supporter(Base):
     status = Column(String(50), default='offline')  # 'online', 'offline', 'busy', 'away'
     max_concurrent_sessions = Column(Integer, default=5)
     current_sessions_count = Column(Integer, default=0)
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
+    updated_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')), onupdate=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
 
     # Relationships
     user = relationship("User", back_populates="supporter")

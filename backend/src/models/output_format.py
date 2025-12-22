@@ -1,5 +1,6 @@
 """Output Format definitions for structured output."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, String, Text, TIMESTAMP
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
@@ -18,7 +19,7 @@ class OutputFormat(Base):
     schema = Column(JSONB)  # JSON schema for output structure
     renderer_hint = Column(JSONB)  # UI rendering hints (type, fields)
     description = Column(Text)  # Format description
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
 
     # Relationships
     tool_configs = relationship("ToolConfig", back_populates="output_format")

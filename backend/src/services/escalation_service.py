@@ -8,6 +8,7 @@ This service handles:
 """
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+import pytz
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 from src.models.session import ChatSession
@@ -169,7 +170,7 @@ class EscalationService:
             # Update session with escalation details
             session.escalation_status = 'pending'
             session.escalation_reason = reason
-            session.escalation_requested_at = datetime.utcnow()
+            session.escalation_requested_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 
             # Add metadata about auto-detection
             if auto_detected:
@@ -178,7 +179,7 @@ class EscalationService:
                 session.session_metadata['auto_escalation'] = {
                     'detected': True,
                     'keywords': keywords or [],
-                    'detected_at': datetime.utcnow().isoformat(),
+                    'detected_at': datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')).isoformat(),
                 }
 
             db.add(session)
@@ -345,7 +346,7 @@ class EscalationService:
             # Assign user and increment session counter
             session.assigned_user_id = user_id
             session.escalation_status = 'assigned'
-            session.escalation_assigned_at = datetime.utcnow()
+            session.escalation_assigned_at = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
 
             # Increment staff member's active session count
             user.current_sessions_count += 1
@@ -448,7 +449,7 @@ class EscalationService:
             if not session.session_metadata:
                 session.session_metadata = {}
             session.session_metadata['escalation_resolved'] = {
-                'resolved_at': datetime.utcnow().isoformat(),
+                'resolved_at': datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')).isoformat(),
                 'notes': resolution_notes,
             }
 

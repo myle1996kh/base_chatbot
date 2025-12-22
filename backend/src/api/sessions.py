@@ -1,6 +1,7 @@
 """Session management API endpoints."""
 from typing import List, Optional
 from datetime import datetime
+import pytz
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Body
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, and_
@@ -376,7 +377,7 @@ async def end_session(
             if session.session_metadata is None:
                 session.session_metadata = {}
             session.session_metadata["feedback"] = request.feedback
-            session.session_metadata["feedback_at"] = datetime.utcnow().isoformat()
+            session.session_metadata["feedback_at"] = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')).isoformat()
 
         db.commit()
 

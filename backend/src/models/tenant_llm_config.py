@@ -1,5 +1,6 @@
 """Tenant-specific LLM configuration with encrypted API keys."""
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, Text, Integer, TIMESTAMP, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -19,12 +20,12 @@ class TenantLLMConfig(Base):
     encrypted_api_key = Column(Text, nullable=False)  # Fernet-encrypted API key
     rate_limit_rpm = Column(Integer, default=60)  # Requests per minute limit
     rate_limit_tpm = Column(Integer, default=10000)  # Tokens per minute limit
-    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, nullable=False, default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')))
     updated_at = Column(
         TIMESTAMP,
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        default=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
+        onupdate=lambda: datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
     )
 
     # Relationships

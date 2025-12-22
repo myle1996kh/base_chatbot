@@ -1,6 +1,7 @@
 """Chat users API endpoints for managing customer accounts."""
 from typing import Optional
 from datetime import datetime
+import pytz
 from fastapi import APIRouter, Depends, HTTPException, Path, Body, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
@@ -85,8 +86,8 @@ async def create_chat_user(
             email=request.email.lower(),
             username=request.username,
             department=request.department,
-            created_at=datetime.utcnow(),
-            last_active=datetime.utcnow(),
+            created_at=datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
+            last_active=datetime.now(pytz.timezone('Asia/Ho_Chi_Minh')),
         )
 
         db.add(new_user)
@@ -160,7 +161,7 @@ async def get_chat_user_by_email(
             raise HTTPException(status_code=404, detail="Chat user not found")
 
         # Update last_active
-        user.last_active = datetime.utcnow()
+        user.last_active = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
         db.commit()
 
         logger.info(
